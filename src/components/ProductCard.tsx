@@ -1,8 +1,10 @@
+// src/components/ProductCard.tsx
 "use client";
 
 import Link from "next/link";
 import { useState } from "react";
 import { FaHeart, FaRegHeart, FaShoppingBag } from "react-icons/fa";
+import { useCart } from "@/context/CartContext";
 
 export type ProductCardProps = {
   handle: string;
@@ -12,6 +14,7 @@ export type ProductCardProps = {
   hoverImage?: any;
   price: number;
   compareAtPrice?: number | null;
+  variantId?: string; // first variant id
 };
 
 export default function ProductCard({
@@ -22,19 +25,70 @@ export default function ProductCard({
   hoverImage,
   price,
   compareAtPrice,
+  variantId,
 }: ProductCardProps) {
+  const { addItem } = useCart();
   const [wish, setWish] = useState(false);
+  const [adding, setAdding] = useState(false);
 
   const discount =
     compareAtPrice && compareAtPrice > price
       ? Math.round(((compareAtPrice - price) / compareAtPrice) * 100)
       : null;
 
+  const handleQuickAdd = async (
+    e: React.MouseEvent<HTMLButtonElement, MouseEvent>
+  ) => {
+    e.preventDefault();
+
+    if (!variantId) {
+      // agar variant id nahi mil rahi to product page pe le jao
+      window.location.href = `/products/${handle}`;
+      return;
+    }
+
+    try {
+      setAdding(true);
+
+      const res = await fetch("/api/cart", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          lines: [
+            {
+              merchandiseId: variantId,
+              quantity: 1,
+            },
+          ],
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.ok) {
+        console.error("Quick add cart error", data);
+        return;
+      }
+
+      addItem({
+        id: variantId,
+        title,
+        variantTitle: undefined,
+        quantity: 1,
+        price,
+      });
+
+      console.log("Quick add OK", data.cart);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setAdding(false);
+    }
+  };
+
   return (
     <div className="laam-card">
       {/* ============ IMAGE AREA ============ */}
       <Link href={`/products/${handle}`} className="laam-card-imgbox">
-        {/* MAIN IMAGE */}
         {image && (
           <img
             src={image.url}
@@ -43,7 +97,6 @@ export default function ProductCard({
           />
         )}
 
-        {/* OPTIONAL HOVER IMAGE (future use) */}
         {hoverImage && (
           <img
             src={hoverImage.url}
@@ -76,7 +129,6 @@ export default function ProductCard({
       <div className="laam-card-body">
         {vendor && <div className="laam-vendor">{vendor}</div>}
 
-        {/* ONE-LINE TITLE WITH ELLIPSIS */}
         <Link href={`/products/${handle}`} className="laam-title">
           {title}
         </Link>
@@ -97,17 +149,18 @@ export default function ProductCard({
           <button
             type="button"
             className="laam-add-btn"
-            onClick={(e) => {
-              e.preventDefault();
-              alert("Add to cart will be connected later!");
-            }}
+            onClick={handleQuickAdd}
             aria-label="Add to cart"
+            disabled={adding}
           >
-            <FaShoppingBag size={16} />
+            {adding ? (
+              <span className="text-[11px]">Adding…</span>
+            ) : (
+              <FaShoppingBag size={16} />
+            )}
           </button>
         </div>
 
-        {/* EXPRESS BADGE */}
         <div className="laam-express">⚡ Express</div>
       </div>
     </div>

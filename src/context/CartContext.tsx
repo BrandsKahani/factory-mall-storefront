@@ -1,21 +1,20 @@
 // src/context/CartContext.tsx
 "use client";
 
-import {
+import React, {
   createContext,
   useContext,
-  useEffect,
   useMemo,
   useState,
   ReactNode,
 } from "react";
 
 export type CartItem = {
-  id: string; // variant id
-  title: string;
-  variantTitle?: string | null;
-  price: number;
+  id: string;            // variant id
+  title: string;         // product title
+  variantTitle?: string; // size / variant title
   quantity: number;
+  price: number;         // per-unit price
 };
 
 type CartContextValue = {
@@ -23,97 +22,70 @@ type CartContextValue = {
   count: number;
   subtotal: number;
   isOpen: boolean;
+  toggleDrawer: () => void;
+  closeDrawer: () => void;
   addItem: (item: CartItem) => void;
   removeItem: (id: string) => void;
-  clear: () => void;
-  openDrawer: () => void;
-  closeDrawer: () => void;
-  toggleDrawer: () => void;
 };
 
-const CartContext = createContext<CartContextValue | null>(null);
-const STORAGE_KEY = "fm-cart-v1";
+const CartContext = createContext<CartContextValue | undefined>(undefined);
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
   const [isOpen, setIsOpen] = useState(false);
 
-  // load from localStorage
-  useEffect(() => {
-    try {
-      const raw = window.localStorage.getItem(STORAGE_KEY);
-      if (raw) {
-        const parsed = JSON.parse(raw) as CartItem[];
-        if (Array.isArray(parsed)) setItems(parsed);
-      }
-    } catch {
-      // ignore
-    }
-  }, []);
+  const count = useMemo(
+    () => items.reduce((sum, it) => sum + it.quantity, 0),
+    [items]
+  );
 
-  // persist
-  useEffect(() => {
-    try {
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
-    } catch {
-      // ignore
-    }
-  }, [items]);
+  const subtotal = useMemo(
+    () => items.reduce((sum, it) => sum + it.quantity * it.price, 0),
+    [items]
+  );
+
+  const toggleDrawer = () => setIsOpen((v) => !v);
+  const closeDrawer = () => setIsOpen(false);
 
   const addItem = (item: CartItem) => {
     setItems((prev) => {
-      const existing = prev.find((p) => p.id === item.id);
-      if (existing) {
-        return prev.map((p) =>
-          p.id === item.id
-            ? { ...p, quantity: p.quantity + item.quantity }
-            : p
-        );
+      const idx = prev.findIndex((p) => p.id === item.id);
+      if (idx === -1) {
+        return [...prev, item];
       }
-      return [...prev, item];
+      const next = [...prev];
+      next[idx] = {
+        ...next[idx],
+        quantity: next[idx].quantity + item.quantity,
+      };
+      return next;
     });
-    setIsOpen(true);
+
+    setIsOpen(true); // add hote hi drawer khol do
   };
 
   const removeItem = (id: string) => {
     setItems((prev) => prev.filter((p) => p.id !== id));
   };
 
-  const clear = () => setItems([]);
-
-  const count = useMemo(
-    () => items.reduce((sum, i) => sum + i.quantity, 0),
-    [items]
-  );
-  const subtotal = useMemo(
-    () => items.reduce((sum, i) => sum + i.quantity * i.price, 0),
-    [items]
-  );
-
   const value: CartContextValue = {
     items,
     count,
     subtotal,
     isOpen,
+    toggleDrawer,
+    closeDrawer,
     addItem,
     removeItem,
-    clear,
-    openDrawer: () => setIsOpen(true),
-    closeDrawer: () => setIsOpen(false),
-    toggleDrawer: () => setIsOpen((o) => !o),
   };
 
-  return (
-    <CartContext.Provider value={value}>
-      {children}
-    </CartContext.Provider>
-  );
+  return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }
 
 export function useCart() {
   const ctx = useContext(CartContext);
   if (!ctx) {
-    throw new Error("useCart must be used inside CartProvider");
+    throw new Error("useCart must be used within <CartProvider>");
   }
   return ctx;
 }

@@ -3,6 +3,7 @@
 
 import * as React from "react";
 import { FiZap, FiTruck, FiRefreshCcw } from "react-icons/fi";
+import { useCart } from "@/context/CartContext";
 
 type Variant = {
   id: string;
@@ -32,6 +33,8 @@ export default function PdpPurchasePanel({
   descriptionHtml,
   description,
 }: Props) {
+  const { addItem } = useCart();
+
   const [selectedVariantId, setSelectedVariantId] =
     React.useState<string | null>(variants[0]?.id ?? null);
   const [qty, setQty] = React.useState(1);
@@ -79,10 +82,9 @@ export default function PdpPurchasePanel({
     (selectedVariant.quantityAvailable ?? 0) > 0 &&
     (selectedVariant.quantityAvailable ?? 0) <= 5;
 
-  // ADD TO BAG → /api/cart (simple cartCreate)
+  // ADD TO BAG → /api/cart + local CartContext
   const handleAddToBag = async (e: React.FormEvent) => {
     e.preventDefault();
-
     if (!selectedVariant || isSelectedVariantOutOfStock) return;
 
     try {
@@ -108,9 +110,16 @@ export default function PdpPurchasePanel({
         return;
       }
 
+      // local cart UI update
+      addItem({
+        id: selectedVariant.id,
+        title,
+        variantTitle: selectedVariant.title,
+        quantity: qty,
+        price: effectivePrice,
+      });
+
       console.log("Cart created:", data.cart);
-      // TODO: drawer open / toast / checkout redirect
-      // window.location.href = data.cart.checkoutUrl;
     } finally {
       setLoading(false);
     }

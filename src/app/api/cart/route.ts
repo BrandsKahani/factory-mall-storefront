@@ -11,6 +11,7 @@ async function getOrCreateCartId() {
   const existing = cookieStore.get(CART_COOKIE_NAME)?.value;
   if (existing) return existing;
 
+  // new cart
   const data = await shopifyFetch<any>(CART_CREATE, {
     lines: [],
   });
@@ -28,7 +29,7 @@ async function getOrCreateCartId() {
     path: "/",
     httpOnly: true,
     sameSite: "lax",
-    maxAge: 60 * 60 * 24 * 30,
+    maxAge: 60 * 60 * 24 * 30, // 30 days
   });
 
   return cartId;

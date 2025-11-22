@@ -6,7 +6,7 @@ import { CartProvider } from "@/context/CartContext";
 
 export const metadata: Metadata = {
   title: "Factory Mall",
-  description: "Factory Mall – Fashion marketplace",
+  description: "Factory Mall Storefront",
 };
 
 export default function RootLayout({
