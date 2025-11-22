@@ -3,10 +3,7 @@
 
 import { cookies } from "next/headers";
 import { shopifyFetch } from "@/lib/shopify";
-import {
-  CART_CREATE_MUTATION,
-  CART_LINES_ADD_MUTATION,
-} from "@/lib/queries";
+import { CART_CREATE, CART_LINES_ADD } from "@/lib/queries";
 
 const CART_COOKIE_NAME = "sfy_cart_id";
 
@@ -23,10 +20,9 @@ async function getOrCreateCartId(): Promise<string> {
   }
 
   // naya cart create karo
-  const data = await shopifyFetch<any>(CART_CREATE_MUTATION, {
-    input: {
-      lines: [],
-    },
+  const data = await shopifyFetch<any>(CART_CREATE, {
+    // CART_CREATE ke GraphQL me variable ka naam $lines hai
+    lines: [],
   });
 
   const createdCart = data?.data?.cartCreate?.cart;
@@ -36,13 +32,13 @@ async function getOrCreateCartId(): Promise<string> {
 
   const cartId = createdCart.id;
 
-  // yahan object overload use kar rahe hain -> TypeScript error khatam
+  // cookie set karo
   cookieStore.set({
     name: CART_COOKIE_NAME,
     value: cartId,
-    path: "/",              // har page pe available
-    httpOnly: true,         // JS se access nahi, secure
-    sameSite: "lax",        // CSRF se bachne ke liye
+    path: "/", // har page pe available
+    httpOnly: true,
+    sameSite: "lax",
     maxAge: 60 * 60 * 24 * 30, // 30 days
   });
 
@@ -52,13 +48,10 @@ async function getOrCreateCartId(): Promise<string> {
 // -----------------------------------------------------
 // 2) Server Action: Add to Cart
 // -----------------------------------------------------
-export async function addToCartAction(
-  variantId: string,
-  quantity: number
-) {
+export async function addToCartAction(variantId: string, quantity: number) {
   const cartId = await getOrCreateCartId();
 
-  const result = await shopifyFetch<any>(CART_LINES_ADD_MUTATION, {
+  const result = await shopifyFetch<any>(CART_LINES_ADD, {
     cartId,
     lines: [
       {
@@ -68,6 +61,6 @@ export async function addToCartAction(
     ],
   });
 
-  // optional: yahan result se updated cart return kar sakte ho
+  // updated cart return karo (optional)
   return result?.data?.cartLinesAdd?.cart ?? null;
 }
