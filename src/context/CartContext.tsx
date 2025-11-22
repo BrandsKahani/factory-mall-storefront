@@ -22,10 +22,14 @@ type CartContextValue = {
   count: number;
   subtotal: number;
   isOpen: boolean;
+  checkoutUrl: string | null;
+
   toggleDrawer: () => void;
   closeDrawer: () => void;
+
   addItem: (item: CartItem) => void;
   removeItem: (id: string) => void;
+  setCheckoutUrl: (url: string | null) => void;
 };
 
 const CartContext = createContext<CartContextValue | undefined>(undefined);
@@ -33,6 +37,7 @@ const CartContext = createContext<CartContextValue | undefined>(undefined);
 export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
   const [isOpen, setIsOpen] = useState(false);
+  const [checkoutUrl, setCheckoutUrl] = useState<string | null>(null);
 
   const count = useMemo(
     () => items.reduce((sum, it) => sum + it.quantity, 0),
@@ -61,7 +66,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       return next;
     });
 
-    // add ke baad drawer open
+    // add ke baad drawer khol do
     setIsOpen(true);
   };
 
@@ -74,10 +79,14 @@ export function CartProvider({ children }: { children: ReactNode }) {
     count,
     subtotal,
     isOpen,
+    checkoutUrl,
+
     toggleDrawer,
     closeDrawer,
+
     addItem,
     removeItem,
+    setCheckoutUrl,
   };
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;

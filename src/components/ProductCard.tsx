@@ -27,7 +27,7 @@ export default function ProductCard({
   compareAtPrice,
   variantId,
 }: ProductCardProps) {
-  const { addItem } = useCart();
+  const { addItem, setCheckoutUrl } = useCart();
   const [wish, setWish] = useState(false);
   const [adding, setAdding] = useState(false);
 
@@ -42,7 +42,7 @@ export default function ProductCard({
     e.preventDefault();
 
     if (!variantId) {
-      // safety fallback: PDP par bhej do
+      // agar variant id nahi mili to PDP pe bhej do
       window.location.href = `/products/${handle}`;
       return;
     }
@@ -67,6 +67,10 @@ export default function ProductCard({
       if (!res.ok || !data.ok) {
         console.error("Quick add cart error", data);
         return;
+      }
+
+      if (data.cart?.checkoutUrl) {
+        setCheckoutUrl(data.cart.checkoutUrl);
       }
 
       addItem({
@@ -152,7 +156,7 @@ export default function ProductCard({
             disabled={adding}
           >
             {adding ? (
-              <span className="text-[11px]">Adding…</span>
+              <span className="text-xs">Adding…</span>
             ) : (
               <FaShoppingBag size={16} />
             )}
