@@ -4,9 +4,9 @@ import { useState, useEffect } from "react";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 
 const banners = [
-  "/banners/banner1.WEBP",
-  "/banners/banner2.WEBP",
-  "/banners/banner3.WEBP",
+  "/banners/banner1.webp",
+  "/banners/banner2.webp",
+  "/banners/banner3.webp",
 ];
 
 export default function HomeHero() {

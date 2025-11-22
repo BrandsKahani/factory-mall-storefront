@@ -1,87 +1,73 @@
 // src/app/api/cart/route.ts
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+import { cookies } from "next/headers";
+import { shopifyFetch } from "@/lib/shopify";
+import { CART_CREATE, CART_LINES_ADD } from "@/lib/queries";
 
-const SHOPIFY_STOREFRONT_ENDPOINT = process.env.SHOPIFY_STOREFRONT_ENDPOINT!;
-const SHOPIFY_STOREFRONT_TOKEN = process.env.SHOPIFY_STOREFRONT_TOKEN!;
+const CART_COOKIE_NAME = "sfy_cart_id";
 
-// Shopify GraphQL helper
-async function shopifyGraphql(query: string, variables: any) {
-  const res = await fetch(SHOPIFY_STOREFRONT_ENDPOINT, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "X-Shopify-Storefront-Access-Token": SHOPIFY_STOREFRONT_TOKEN,
-    },
-    body: JSON.stringify({ query, variables }),
+async function getOrCreateCartId() {
+  const cookieStore = cookies();
+  const existing = cookieStore.get(CART_COOKIE_NAME)?.value;
+  if (existing) return existing;
+
+  const data = await shopifyFetch<any>(CART_CREATE, {
+    lines: [],
   });
 
-  if (!res.ok) {
-    console.error(await res.text());
-    throw new Error("Shopify GraphQL error");
+  const cart = data?.data?.cartCreate?.cart;
+  if (!cart?.id) {
+    throw new Error("Failed to create cart");
   }
 
-  return res.json();
+  const cartId = cart.id;
+
+  cookieStore.set({
+    name: CART_COOKIE_NAME,
+    value: cartId,
+    path: "/",
+    httpOnly: true,
+    sameSite: "lax",
+    maxAge: 60 * 60 * 24 * 30,
+  });
+
+  return cartId;
 }
 
-// sirf cartCreate mutation
-const CART_CREATE = /* GraphQL */ `
-  mutation CartCreate($lines: [CartLineInput!]) {
-    cartCreate(input: { lines: $lines }) {
-      cart {
-        id
-        checkoutUrl
-        lines(first: 10) {
-          edges {
-            node {
-              id
-              quantity
-              merchandise {
-                ... on ProductVariant {
-                  id
-                  title
-                }
-              }
-            }
-          }
-        }
-      }
-      userErrors {
-        field
-        message
-      }
-    }
-  }
-`;
-
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { lines } = body as {
-      lines: { merchandiseId: string; quantity: number }[];
-    };
+    const lines = body?.lines ?? [];
 
-    const result = await shopifyGraphql(CART_CREATE, {
-      lines,
-    });
-
-    const data = result?.data?.cartCreate;
-
-    if (data?.userErrors?.length) {
-      console.error("CartCreate errors", data.userErrors);
+    if (!Array.isArray(lines) || lines.length === 0) {
       return NextResponse.json(
-        { ok: false, errors: data.userErrors },
+        { ok: false, error: "No lines to add" },
         { status: 400 }
       );
     }
 
-    return NextResponse.json({
-      ok: true,
-      cart: data.cart,
+    const cartId = await getOrCreateCartId();
+
+    const data = await shopifyFetch<any>(CART_LINES_ADD, {
+      cartId,
+      lines,
     });
-  } catch (error) {
-    console.error(error);
+
+    const userErrors = data?.data?.cartLinesAdd?.userErrors;
+    if (userErrors?.length) {
+      console.error("Shopify cartLinesAdd errors:", userErrors);
+      return NextResponse.json(
+        { ok: false, error: "Shopify error", userErrors },
+        { status: 400 }
+      );
+    }
+
+    const cart = data?.data?.cartLinesAdd?.cart;
+    return NextResponse.json({ ok: true, cart });
+  } catch (err) {
+    console.error("Cart API error:", err);
     return NextResponse.json(
-      { ok: false, error: "Something went wrong" },
+      { ok: false, error: "Server error" },
       { status: 500 }
     );
   }
