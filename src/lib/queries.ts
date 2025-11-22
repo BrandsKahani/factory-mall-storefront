@@ -197,47 +197,35 @@ export const HOME_PRODUCTS = /* GraphQL */ `
   }
 `;
 
-// ============================
-// HOME COLLECTIONS (from Shop metafield)
-// - Shopify: Settings → Custom data → Store → "home.collections_slider"
-// - Type: List of Collection reference
-// ============================
-export const HOME_COLLECTIONS = /* GraphQL */ `
-  query HomeCollectionsFromMetafield {
-    shop {
-      metafield(namespace: "home", key: "collections_slider") {
-        references(first: 20) {
-          edges {
-            node {
-              ... on Collection {
-                id
-                handle
-                title
-                image {
-                  url
-                  altText
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-`;
-
-
 /* ============================
    SHOPIFY CART (Storefront Cart API)
 ============================ */
 
-export const CART_CREATE_MUTATION = /* GraphQL */ `
+/** Cart create – used in addToCartAction / api/cart */
+export const CART_CREATE = /* GraphQL */ `
   mutation CartCreate($lines: [CartLineInput!]) {
     cartCreate(input: { lines: $lines }) {
       cart {
         id
         checkoutUrl
-        totalQuantity
+        lines(first: 50) {
+          edges {
+            node {
+              id
+              quantity
+              merchandise {
+                ... on ProductVariant {
+                  id
+                  title
+                  product {
+                    title
+                    handle
+                  }
+                }
+              }
+            }
+          }
+        }
       }
       userErrors {
         field
@@ -247,13 +235,31 @@ export const CART_CREATE_MUTATION = /* GraphQL */ `
   }
 `;
 
-export const CART_LINES_ADD_MUTATION = /* GraphQL */ `
+/** Cart lines add – add items in existing cart */
+export const CART_LINES_ADD = /* GraphQL */ `
   mutation CartLinesAdd($cartId: ID!, $lines: [CartLineInput!]!) {
     cartLinesAdd(cartId: $cartId, lines: $lines) {
       cart {
         id
         checkoutUrl
-        totalQuantity
+        lines(first: 50) {
+          edges {
+            node {
+              id
+              quantity
+              merchandise {
+                ... on ProductVariant {
+                  id
+                  title
+                  product {
+                    title
+                    handle
+                  }
+                }
+              }
+            }
+          }
+        }
       }
       userErrors {
         field
@@ -305,75 +311,6 @@ export const BRAND_PRODUCTS_SOURCE = /* GraphQL */ `
                 compareAtPrice {
                   amount
                   currencyCode
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-`;
-/* ============================
-   HOME COLLECTIONS (from menu)
-   - Uses Online Store navigation menu "Home Collections"
-============================ */
-
-export const HOME_COLLECTIONS_MENU = /* GraphQL */ `
-  query HomeCollectionsMenu {
-    menu(handle: "home-collections") {
-      items {
-        id
-        title
-        resource {
-          __typename
-          ... on Collection {
-            id
-            handle
-            title
-            image {
-              url
-              altText
-            }
-          }
-        }
-      }
-    }
-  }
-`;
-// ============================
-// COLLECTION SLIDER BY KEY (Store metafield -> collection_tile metaobjects)
-// ============================
-export const COLLECTION_SLIDER_BY_KEY = /* GraphQL */ `
-  query CollectionSliderByKey($key: String!) {
-    shop {
-      metafield(namespace: "home", key: $key) {
-        references(first: 50) {
-          edges {
-            node {
-              ... on Metaobject {
-                id
-                fields {
-                  key
-                  value
-                  reference {
-                    # collection field
-                    ... on Collection {
-                      handle
-                      title
-                      image {
-                        url
-                        altText
-                      }
-                    }
-                    # image field (file)
-                    ... on MediaImage {
-                      image {
-                        url
-                        altText
-                      }
-                    }
-                  }
                 }
               }
             }
