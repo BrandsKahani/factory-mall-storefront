@@ -18,7 +18,9 @@ export default function CartDrawer() {
           Close
         </button>
 
-        <h2 className="text-lg font-semibold mb-4">Shopping Bag ({count})</h2>
+        <h2 className="text-lg font-semibold mb-4">
+          Shopping Bag ({count})
+        </h2>
 
         {items.length === 0 ? (
           <p className="text-sm text-gray-500">Your bag is empty.</p>
@@ -69,7 +71,7 @@ export default function CartDrawer() {
               </button>
               <p className="text-[11px] text-gray-500 mt-2">
                 Checkout integration with Shopify cart API hum next step me
-                wire kar sakte hain.
+                add kareinge.
               </p>
             </div>
           </>

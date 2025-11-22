@@ -119,6 +119,8 @@ export default async function BrandPage({ params }: PageProps) {
                     ? Number(firstVariant.compareAtPrice.amount)
                     : null;
 
+                const variantId = firstVariant?.id ?? null;
+
                 return (
                   <ProductCard
                     key={p.id}
@@ -129,6 +131,7 @@ export default async function BrandPage({ params }: PageProps) {
                     hoverImage={hoverImage}
                     price={price}
                     compareAtPrice={compareAtPrice}
+                    variantId={variantId ?? undefined} // 👈 quick add ke liye
                   />
                 );
               })}

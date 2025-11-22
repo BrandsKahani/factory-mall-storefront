@@ -1,8 +1,8 @@
-// src/app/layout.tsx
 import type { Metadata } from "next";
 import "./globals.css";
-import Header from "@/components/Header";
 import { CartProvider } from "@/context/CartContext";
+import CartDrawer from "@/components/CartDrawer";
+import Header from "@/components/Header";
 
 export const metadata: Metadata = {
   title: "Factory Mall",
@@ -18,8 +18,10 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <CartProvider>
+          {/* Header globally yahan se aa raha ho to theek hai */}
           <Header />
-          {/* main app shell / pages */}
+          {/* CartDrawer hamesha mount rahega */}
+          <CartDrawer />
           {children}
         </CartProvider>
       </body>

@@ -61,7 +61,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
       return next;
     });
 
-    setIsOpen(true); // add hote hi drawer khol do
+    // add ke baad drawer open
+    setIsOpen(true);
   };
 
   const removeItem = (id: string) => {

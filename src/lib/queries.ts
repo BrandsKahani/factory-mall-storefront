@@ -89,6 +89,7 @@ export const PRODUCT_RECOMMENDATIONS = /* GraphQL */ `
       variants(first: 1) {
         edges {
           node {
+            id
             price {
               amount
               currencyCode
@@ -136,6 +137,7 @@ export const COLLECTION_BY_HANDLE = /* GraphQL */ `
             variants(first: 2) {
               edges {
                 node {
+                  id
                   price {
                     amount
                     currencyCode
@@ -180,6 +182,7 @@ export const HOME_PRODUCTS = /* GraphQL */ `
           variants(first: 1) {
             edges {
               node {
+                id
                 price {
                   amount
                   currencyCode
@@ -198,16 +201,17 @@ export const HOME_PRODUCTS = /* GraphQL */ `
 `;
 
 /* ============================
-   SHOPIFY CART (Storefront Cart API)
+   SHOPIFY CART – Storefront Cart API
 ============================ */
 
-/** Cart create – used in addToCartAction / api/cart */
+// Shopify Cart – create new cart
 export const CART_CREATE = /* GraphQL */ `
   mutation CartCreate($lines: [CartLineInput!]) {
     cartCreate(input: { lines: $lines }) {
       cart {
         id
         checkoutUrl
+        totalQuantity
         lines(first: 50) {
           edges {
             node {
@@ -235,13 +239,14 @@ export const CART_CREATE = /* GraphQL */ `
   }
 `;
 
-/** Cart lines add – add items in existing cart */
+// Shopify Cart – add lines to existing cart
 export const CART_LINES_ADD = /* GraphQL */ `
   mutation CartLinesAdd($cartId: ID!, $lines: [CartLineInput!]!) {
     cartLinesAdd(cartId: $cartId, lines: $lines) {
       cart {
         id
         checkoutUrl
+        totalQuantity
         lines(first: 50) {
           edges {
             node {
@@ -320,4 +325,3 @@ export const BRAND_PRODUCTS_SOURCE = /* GraphQL */ `
     }
   }
 `;
-export { CART_CREATE as CART_CREATE_MUTATION, CART_LINES_ADD as CART_LINES_ADD_MUTATION };

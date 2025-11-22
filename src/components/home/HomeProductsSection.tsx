@@ -27,6 +27,8 @@ export default async function HomeProductsSection({
         ? Number(firstVariant.compareAtPrice.amount)
         : null;
 
+    const variantId = firstVariant?.id ?? null;
+
     return {
       handle: n.handle,
       title: n.title,
@@ -35,23 +37,25 @@ export default async function HomeProductsSection({
       hoverImage: secondImage,
       price,
       compareAtPrice: compareAt,
+      variantId, // 👈 yahan se ProductCard ko jayega
     };
   });
 
-  // Future logic  
+  // Future logic – abhi sab 8-8 le rahe ho
   if (queryType === "trending") products = products.slice(0, 8);
   if (queryType === "new") products = products.slice(0, 8);
   if (queryType === "best") products = products.slice(0, 8);
 
   return (
     <section className="home-section">
-  <h2 className="home-section-title">{sectionTitle}</h2>
+      <h2 className="home-section-title">{sectionTitle}</h2>
 
-  <div className="product-grid">
-    {products?.map((p: any) => (
-      <ProductCard key={p.handle} {...p} />
-    ))}
-  </div>
-</section>
+      <div className="product-grid">
+        {products?.map((p: any) => (
+          <ProductCard key={p.handle} {...p} />
+          // {...p} me ab variantId bhi include hai
+        ))}
+      </div>
+    </section>
   );
 }

@@ -82,7 +82,6 @@ export default function PdpPurchasePanel({
     (selectedVariant.quantityAvailable ?? 0) > 0 &&
     (selectedVariant.quantityAvailable ?? 0) <= 5;
 
-  // ADD TO BAG → /api/cart + local CartContext
   const handleAddToBag = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedVariant || isSelectedVariantOutOfStock) return;
@@ -110,7 +109,7 @@ export default function PdpPurchasePanel({
         return;
       }
 
-      // local cart UI update
+      // Local cart UI update + drawer open (CartContext me)
       addItem({
         id: selectedVariant.id,
         title,
@@ -119,7 +118,7 @@ export default function PdpPurchasePanel({
         price: effectivePrice,
       });
 
-      console.log("Cart created:", data.cart);
+      console.log("PDP add to cart OK", data.cart);
     } finally {
       setLoading(false);
     }
@@ -306,7 +305,7 @@ export default function PdpPurchasePanel({
         </div>
       </div>
 
-      {/* SIZE CHART MODAL */}
+      {/* SIZE CHART MODAL – as before */}
       {sizeChartOpen && (
         <div
           className="pdp-sizechart-overlay"

@@ -42,7 +42,7 @@ export default function ProductCard({
     e.preventDefault();
 
     if (!variantId) {
-      // agar variant id nahi mil rahi to product page pe le jao
+      // safety fallback: PDP par bhej do
       window.location.href = `/products/${handle}`;
       return;
     }
@@ -87,7 +87,7 @@ export default function ProductCard({
 
   return (
     <div className="laam-card">
-      {/* ============ IMAGE AREA ============ */}
+      {/* IMAGE AREA */}
       <Link href={`/products/${handle}`} className="laam-card-imgbox">
         {image && (
           <img
@@ -105,7 +105,6 @@ export default function ProductCard({
           />
         )}
 
-        {/* TOP BADGES + WISHLIST (overlay) */}
         <div className="laam-card-top">
           {discount && (
             <span className="laam-discount-badge">-{discount}%</span>
@@ -125,7 +124,7 @@ export default function ProductCard({
         </div>
       </Link>
 
-      {/* ============ BODY ============ */}
+      {/* BODY */}
       <div className="laam-card-body">
         {vendor && <div className="laam-vendor">{vendor}</div>}
 
@@ -133,7 +132,6 @@ export default function ProductCard({
           {title}
         </Link>
 
-        {/* PRICE ROW + ADD TO CART ICON */}
         <div className="laam-price-row">
           <div>
             <div className="laam-price">
