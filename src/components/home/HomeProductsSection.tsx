@@ -14,20 +14,20 @@ export default async function HomeProductsSection({
 
   let products = edges.map((e: any) => {
     const n = e.node;
+
     const firstImage = n.images?.edges?.[0]?.node ?? null;
     const secondImage = n.images?.edges?.[1]?.node ?? null;
+
     const firstVariant = n.variants?.edges?.[0]?.node ?? null;
 
     const price = firstVariant?.price?.amount
       ? Number(firstVariant.price.amount)
       : 0;
 
-    const compareAt =
+    const compareAtPrice =
       firstVariant?.compareAtPrice?.amount != null
         ? Number(firstVariant.compareAtPrice.amount)
         : null;
-
-    const variantId = firstVariant?.id ?? null;
 
     return {
       handle: n.handle,
@@ -36,12 +36,13 @@ export default async function HomeProductsSection({
       image: firstImage,
       hoverImage: secondImage,
       price,
-      compareAtPrice: compareAt,
-      variantId, // 👈 yahan se ProductCard ko jayega
+      compareAtPrice,
+      variantId: firstVariant?.id ?? null,
+      variantTitle: firstVariant?.title ?? null,
     };
   });
 
-  // Future logic – abhi sab 8-8 le rahe ho
+  // Future logic
   if (queryType === "trending") products = products.slice(0, 8);
   if (queryType === "new") products = products.slice(0, 8);
   if (queryType === "best") products = products.slice(0, 8);
@@ -53,7 +54,6 @@ export default async function HomeProductsSection({
       <div className="product-grid">
         {products?.map((p: any) => (
           <ProductCard key={p.handle} {...p} />
-          // {...p} me ab variantId bhi include hai
         ))}
       </div>
     </section>

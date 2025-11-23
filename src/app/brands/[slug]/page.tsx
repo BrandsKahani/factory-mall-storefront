@@ -120,6 +120,7 @@ export default async function BrandPage({ params }: PageProps) {
                     : null;
 
                 const variantId = firstVariant?.id ?? null;
+                const variantTitle = firstVariant?.title ?? null;
 
                 return (
                   <ProductCard
@@ -131,7 +132,8 @@ export default async function BrandPage({ params }: PageProps) {
                     hoverImage={hoverImage}
                     price={price}
                     compareAtPrice={compareAtPrice}
-                    variantId={variantId ?? undefined} // 👈 quick add ke liye
+                    variantId={variantId ?? undefined}
+                    variantTitle={variantTitle ?? undefined}
                   />
                 );
               })}
