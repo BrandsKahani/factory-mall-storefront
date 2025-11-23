@@ -3,6 +3,9 @@
 
 import { useCart } from "@/context/CartContext";
 
+// 👉 yahan apna Shopify "myshopify" domain daal do
+const SHOPIFY_CHECKOUT_DOMAIN = "ut3g5g-i6.myshopify.com";
+
 export default function CartDrawer() {
   const {
     items,
@@ -17,26 +20,26 @@ export default function CartDrawer() {
   if (!isOpen) return null;
 
   const handleCheckout = () => {
-  if (!checkoutUrl) return;
+    if (!checkoutUrl) return;
 
-  try {
-    const url = new URL(checkoutUrl);
+    // checkoutUrl ka sirf path + query use karenge
+    try {
+      const url = new URL(checkoutUrl);
 
-    // Agar env set hai to host force kar do .myshopify.com pe
-    const checkoutDomain =
-      process.env.NEXT_PUBLIC_SHOPIFY_CHECKOUT_DOMAIN || url.host;
+      // force Shopify domain
+      url.protocol = "https:";
+      url.host = SHOPIFY_CHECKOUT_DOMAIN;
 
-    url.protocol = "https:";
-    url.host = checkoutDomain;
-
-    window.location.href = url.toString();
-  } catch (e) {
-    // Agar parsing fail ho jaye to original URL hi open kar do
-    console.error("Invalid checkoutUrl, redirecting raw:", e);
-    window.location.href = checkoutUrl;
-  }
-};
-
+      window.location.href = url.toString();
+    } catch (e) {
+      // agar URL constructor fail ho jaye to regex se host replace kar do
+      const fixed = checkoutUrl.replace(
+        /^https?:\/\/[^/]+/,
+        `https://${SHOPIFY_CHECKOUT_DOMAIN}`
+      );
+      window.location.href = fixed;
+    }
+  };
 
   return (
     <div className="cart-overlay">
