@@ -82,8 +82,10 @@ export default function PdpPurchasePanel({
     (selectedVariant.quantityAvailable ?? 0) > 0 &&
     (selectedVariant.quantityAvailable ?? 0) <= 5;
 
+  // ---------- ADD TO BAG ----------
   const handleAddToBag = async (e: React.FormEvent) => {
     e.preventDefault();
+
     if (!selectedVariant || isSelectedVariantOutOfStock) return;
 
     try {
@@ -104,21 +106,24 @@ export default function PdpPurchasePanel({
 
       const data = await res.json();
 
-      if (!res.ok || !data.ok) {
+      if (!res.ok || !data.ok || !data.cart) {
         console.error("Cart error", data);
         return;
       }
 
-      // Local cart UI update + drawer open (CartContext me)
-      addItem({
-        id: selectedVariant.id,
-        title,
-        variantTitle: selectedVariant.title,
-        quantity: qty,
-        price: effectivePrice,
-      });
-
-      console.log("PDP add to cart OK", data.cart);
+      // Local cart state update + drawer open
+      addItem(
+        {
+          id: selectedVariant.id,
+          title,
+          variantTitle: selectedVariant.title,
+          price: effectivePrice,
+          quantity: qty,
+        },
+        data.cart.checkoutUrl // normalized url from API
+      );
+    } catch (err) {
+      console.error("Add to cart failed", err);
     } finally {
       setLoading(false);
     }
@@ -241,21 +246,13 @@ export default function PdpPurchasePanel({
           <div className="pdp-section-label">Quantity</div>
 
           <div className="pdp-qty-row">
-            <button
-              type="button"
-              className="pdp-qty-btn"
-              onClick={decQty}
-            >
+            <button type="button" className="pdp-qty-btn" onClick={decQty}>
               –
             </button>
 
             <div className="pdp-qty-value">{qty}</div>
 
-            <button
-              type="button"
-              className="pdp-qty-btn"
-              onClick={incQty}
-            >
+            <button type="button" className="pdp-qty-btn" onClick={incQty}>
               +
             </button>
           </div>
@@ -305,7 +302,7 @@ export default function PdpPurchasePanel({
         </div>
       </div>
 
-      {/* SIZE CHART MODAL – as before */}
+      {/* SIZE CHART MODAL */}
       {sizeChartOpen && (
         <div
           className="pdp-sizechart-overlay"

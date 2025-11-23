@@ -1,72 +1,68 @@
 // src/context/CartContext.tsx
 "use client";
 
-import React, {
-  createContext,
-  useContext,
-  useMemo,
-  useState,
-  ReactNode,
-} from "react";
+import React, { createContext, useContext, useMemo, useState } from "react";
 
 export type CartItem = {
-  id: string;            // variant id
-  title: string;         // product title
-  variantTitle?: string; // size / variant title
+  id: string;
+  title: string;
+  variantTitle?: string | null;
+  price: number; // per unit
   quantity: number;
-  price: number;         // per-unit price
 };
 
-type CartContextValue = {
+type CartContextType = {
   items: CartItem[];
   count: number;
   subtotal: number;
   isOpen: boolean;
-  checkoutUrl: string | null;
-
-  toggleDrawer: () => void;
+  lastCheckoutUrl: string | null;
+  openDrawer: () => void;
   closeDrawer: () => void;
-
-  addItem: (item: CartItem) => void;
+  toggleDrawer: () => void;
+  addItem: (item: CartItem, checkoutUrl?: string | null) => void;
   removeItem: (id: string) => void;
   setCheckoutUrl: (url: string | null) => void;
 };
 
-const CartContext = createContext<CartContextValue | undefined>(undefined);
+const CartContext = createContext<CartContextType | undefined>(undefined);
 
-export function CartProvider({ children }: { children: ReactNode }) {
+export function CartProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
   const [isOpen, setIsOpen] = useState(false);
-  const [checkoutUrl, setCheckoutUrl] = useState<string | null>(null);
+  const [lastCheckoutUrl, setLastCheckoutUrl] = useState<string | null>(null);
 
   const count = useMemo(
-    () => items.reduce((sum, it) => sum + it.quantity, 0),
+    () => items.reduce((sum, item) => sum + item.quantity, 0),
     [items]
   );
 
   const subtotal = useMemo(
-    () => items.reduce((sum, it) => sum + it.quantity * it.price, 0),
+    () => items.reduce((sum, item) => sum + item.price * item.quantity, 0),
     [items]
   );
 
-  const toggleDrawer = () => setIsOpen((v) => !v);
+  const openDrawer = () => setIsOpen(true);
   const closeDrawer = () => setIsOpen(false);
+  const toggleDrawer = () => setIsOpen((v) => !v);
 
-  const addItem = (item: CartItem) => {
+  const addItem = (item: CartItem, checkoutUrl?: string | null) => {
     setItems((prev) => {
-      const idx = prev.findIndex((p) => p.id === item.id);
-      if (idx === -1) {
-        return [...prev, item];
+      const existing = prev.find(
+        (p) => p.id === item.id && p.variantTitle === item.variantTitle
+      );
+      if (existing) {
+        return prev.map((p) =>
+          p === existing ? { ...p, quantity: p.quantity + item.quantity } : p
+        );
       }
-      const next = [...prev];
-      next[idx] = {
-        ...next[idx],
-        quantity: next[idx].quantity + item.quantity,
-      };
-      return next;
+      return [...prev, item];
     });
 
-    // add ke baad drawer khol do
+    if (checkoutUrl) {
+      setLastCheckoutUrl(checkoutUrl);
+    }
+
     setIsOpen(true);
   };
 
@@ -74,19 +70,18 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setItems((prev) => prev.filter((p) => p.id !== id));
   };
 
-  const value: CartContextValue = {
+  const value: CartContextType = {
     items,
     count,
     subtotal,
     isOpen,
-    checkoutUrl,
-
-    toggleDrawer,
+    lastCheckoutUrl,
+    openDrawer,
     closeDrawer,
-
+    toggleDrawer,
     addItem,
     removeItem,
-    setCheckoutUrl,
+    setCheckoutUrl: setLastCheckoutUrl,
   };
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
@@ -95,7 +90,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
 export function useCart() {
   const ctx = useContext(CartContext);
   if (!ctx) {
-    throw new Error("useCart must be used within <CartProvider>");
+    throw new Error("useCart must be used within CartProvider");
   }
   return ctx;
 }

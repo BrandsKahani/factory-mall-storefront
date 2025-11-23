@@ -3,9 +3,6 @@
 
 import { useCart } from "@/context/CartContext";
 
-// 👉 Yahan apna Shopify myshopify domain
-const SHOPIFY_CHECKOUT_DOMAIN = "ut3g5g-i6.myshopify.com";
-
 export default function CartDrawer() {
   const {
     items,
@@ -14,105 +11,88 @@ export default function CartDrawer() {
     isOpen,
     closeDrawer,
     removeItem,
-    checkoutUrl,
+    lastCheckoutUrl,
   } = useCart();
 
   if (!isOpen) return null;
 
-  const handleCheckout = () => {
-    if (!checkoutUrl) return;
-
-    let finalUrl = "";
-
-    if (checkoutUrl.startsWith("http")) {
-      // ABSOLUTE URL (https://factorymall.pk/cart/...)
-      try {
-        const url = new URL(checkoutUrl);
-        url.protocol = "https:";
-        url.host = SHOPIFY_CHECKOUT_DOMAIN;
-        finalUrl = url.toString();
-      } catch {
-        // agar parsing fail ho jaye to fallback
-        finalUrl = `https://${SHOPIFY_CHECKOUT_DOMAIN}/cart`;
-      }
-    } else if (checkoutUrl.startsWith("/")) {
-      // RELATIVE URL (/cart/c/...)
-      finalUrl = `https://${SHOPIFY_CHECKOUT_DOMAIN}${checkoutUrl}`;
-    } else {
-      // koi aur relative form (cart/c/...)
-      finalUrl = `https://${SHOPIFY_CHECKOUT_DOMAIN}/${checkoutUrl.replace(
-        /^\/+/,
-        ""
-      )}`;
-    }
-
-    console.log("Redirecting to Shopify checkout:", finalUrl);
-    window.location.href = finalUrl;
+  const handleCheckoutClick = () => {
+    if (!lastCheckoutUrl) return;
+    // Shopify checkout open
+    window.location.href = lastCheckoutUrl;
   };
 
   return (
-    <div className="cart-overlay">
-      <div className="cart-drawer">
-        {/* Header */}
-        <header className="cart-header">
-          <h2 className="cart-title">Shopping Bag ({count})</h2>
-          <button className="cart-close" onClick={closeDrawer}>
-            Close
-          </button>
-        </header>
+    <div className="fixed inset-0 z-50 bg-black/40 flex justify-end">
+      <div className="bg-white h-full w-full max-w-md p-4 shadow-lg relative">
+        <button
+          className="absolute top-3 right-3 text-sm underline"
+          onClick={closeDrawer}
+        >
+          Close
+        </button>
 
-        {/* Body */}
+        <h2 className="text-lg font-semibold mb-4">
+          Shopping Bag ({count})
+        </h2>
+
         {items.length === 0 ? (
-          <p className="cart-empty">Your bag is empty.</p>
+          <p className="text-sm text-gray-500">Your bag is empty.</p>
         ) : (
           <>
-            <div className="cart-items">
+            <div className="space-y-3 max-h-[60vh] overflow-auto pr-2">
               {items.map((item) => (
-                <div key={item.id} className="cart-line">
-                  <div className="cart-line-info">
-                    <div className="cart-line-title">{item.title}</div>
+                <div
+                  key={item.id}
+                  className="flex items-center justify-between border-b pb-2 text-sm"
+                >
+                  <div>
+                    <div className="font-medium">{item.title}</div>
                     {item.variantTitle && (
-                      <div className="cart-line-variant">
+                      <div className="text-xs text-gray-500">
                         {item.variantTitle}
                       </div>
                     )}
-                    <div className="cart-line-meta">
-                      Qty: {item.quantity} • PKR{" "}
-                      {Math.round(item.price * item.quantity).toLocaleString()}
+                    <div className="text-xs text-gray-500">
+                      Qty: {item.quantity}
                     </div>
                   </div>
-                  <button
-                    className="cart-line-remove"
-                    onClick={() => removeItem(item.id)}
-                  >
-                    Remove
-                  </button>
+                  <div className="text-right">
+                    <div>
+                      PKR{" "}
+                      {Math.round(
+                        item.price * item.quantity
+                      ).toLocaleString()}
+                    </div>
+                    <button
+                      className="text-[11px] text-gray-500 underline mt-1"
+                      onClick={() => removeItem(item.id)}
+                    >
+                      Remove
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
 
-            {/* Footer */}
-            <footer className="cart-footer">
-              <div className="cart-subtotal-row">
+            <div className="mt-4 border-t pt-3">
+              <div className="flex justify-between text-sm mb-3">
                 <span>Subtotal</span>
                 <span>PKR {Math.round(subtotal).toLocaleString()}</span>
               </div>
 
               <button
-                type="button"
-                className="cart-checkout-btn"
-                onClick={handleCheckout}
-                disabled={!checkoutUrl}
+                className="pdp-addtocart-btn"
+                onClick={handleCheckoutClick}
+                disabled={!lastCheckoutUrl}
               >
                 Secure checkout
               </button>
 
-              {!checkoutUrl && (
-                <p className="cart-note">
-                  Checkout link will appear when Shopify cart responds.
-                </p>
-              )}
-            </footer>
+              <p className="text-[11px] text-gray-500 mt-2">
+                You will be redirected to secure Shopify checkout.
+              </p>
+            </div>
           </>
         )}
       </div>
