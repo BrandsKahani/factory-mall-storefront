@@ -1,10 +1,15 @@
 import { shopifyFetch } from "@/lib/shopify";
+import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
   try {
     const { lines } = await req.json();
 
-    // STEP 1 — create an empty cart
+    if (!lines || !Array.isArray(lines)) {
+      return NextResponse.json({ ok: false, message: "Missing lines" });
+    }
+
+    // Step 1 — create cart
     const createRes = await shopifyFetch<any>(`
       mutation {
         cartCreate {
@@ -16,41 +21,65 @@ export async function POST(req: Request) {
     `);
 
     const cartId = createRes?.data?.cartCreate?.cart?.id;
-
     if (!cartId) {
-      return Response.json({ ok: false, message: "Cart creation failed" });
+      return NextResponse.json({ ok: false, message: "Cart creation failed" });
     }
 
-    // STEP 2 — add line items (Shopify generates REAL checkoutUrl here)
-    const addRes = await shopifyFetch<any>(`
+    // Step 2 — add items
+    const addRes = await shopifyFetch<any>(
+      `
       mutation CartLinesAdd($cartId: ID!, $lines: [CartLineInput!]!) {
         cartLinesAdd(cartId: $cartId, lines: $lines) {
           cart {
             id
             checkoutUrl
+            lines(first: 20) {
+              edges {
+                node {
+                  id
+                  quantity
+                  merchandise {
+                    ... on ProductVariant {
+                      id
+                      title
+                      product {
+                        title
+                        handle
+                      }
+                      price {
+                        amount
+                      }
+                    }
+                  }
+                }
+              }
+            }
           }
         }
       }
-    `, { cartId, lines });
+    `,
+      { cartId, lines }
+    );
 
     const cart = addRes?.data?.cartLinesAdd?.cart;
-
     if (!cart) {
-      return Response.json({ ok: false, message: "Adding lines failed" });
+      return NextResponse.json({ ok: false, message: "Add lines failed" });
     }
 
-    // STEP 3 — force correct Shopify checkout domain (safety)
-    const checkoutUrl = cart.checkoutUrl.replace(
+    // Fix checkout URL
+    const fixedCheckoutUrl = cart.checkoutUrl.replace(
       "factorymall.pk",
       "ut3g5g-i6.myshopify.com"
     );
 
-    return Response.json({
+    return NextResponse.json({
       ok: true,
-      cart: { id: cart.id, checkoutUrl }
+      cart: {
+        ...cart,
+        checkoutUrl: fixedCheckoutUrl,
+      },
     });
-
   } catch (err) {
-    return Response.json({ ok: false, error: err });
+    return NextResponse.json({ ok: false, error: err });
   }
 }

@@ -1,10 +1,9 @@
-// src/components/ProductCard.tsx
 "use client";
 
 import Link from "next/link";
 import { useState } from "react";
-import { FaHeart, FaRegHeart, FaShoppingBag } from "react-icons/fa";
 import { useCart } from "@/context/CartContext";
+import { FaRegHeart, FaHeart, FaShoppingBag } from "react-icons/fa";
 
 export type ProductCardProps = {
   handle: string;
@@ -14,7 +13,8 @@ export type ProductCardProps = {
   hoverImage?: any;
   price: number;
   compareAtPrice?: number | null;
-  variantId?: string; // first variant id
+  variantId: string;           // 🔥 Required for cart
+  variantTitle?: string | null;
 };
 
 export default function ProductCard({
@@ -26,67 +26,28 @@ export default function ProductCard({
   price,
   compareAtPrice,
   variantId,
+  variantTitle,
 }: ProductCardProps) {
-  const { addItem, setCheckoutUrl } = useCart();
   const [wish, setWish] = useState(false);
-  const [adding, setAdding] = useState(false);
+  const { addItem } = useCart();
 
   const discount =
     compareAtPrice && compareAtPrice > price
       ? Math.round(((compareAtPrice - price) / compareAtPrice) * 100)
       : null;
 
-  const handleQuickAdd = async (
-    e: React.MouseEvent<HTMLButtonElement, MouseEvent>
-  ) => {
-    e.preventDefault();
-
-    if (!variantId) {
-      // agar variant id nahi mili to PDP pe bhej do
-      window.location.href = `/products/${handle}`;
-      return;
-    }
-
-    try {
-      setAdding(true);
-
-      const res = await fetch("/api/cart", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          lines: [
-            {
-              merchandiseId: variantId,
-              quantity: 1,
-            },
-          ],
-        }),
-      });
-
-      const data = await res.json();
-      if (!res.ok || !data.ok) {
-        console.error("Quick add cart error", data);
-        return;
-      }
-
-      if (data.cart?.checkoutUrl) {
-        setCheckoutUrl(data.cart.checkoutUrl);
-      }
-
-      addItem({
+  // 🔥 QUICK ADD HANDLER
+  const handleQuickAdd = () => {
+    addItem(
+      {
         id: variantId,
         title,
-        variantTitle: undefined,
-        quantity: 1,
+        variantTitle,
         price,
-      });
-
-      console.log("Quick add OK", data.cart);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setAdding(false);
-    }
+        quantity: 1,
+      },
+      null
+    );
   };
 
   return (
@@ -109,6 +70,7 @@ export default function ProductCard({
           />
         )}
 
+        {/* BADGE + HEART */}
         <div className="laam-card-top">
           {discount && (
             <span className="laam-discount-badge">-{discount}%</span>
@@ -141,6 +103,7 @@ export default function ProductCard({
             <div className="laam-price">
               PKR {price.toLocaleString("en-PK")}
             </div>
+
             {compareAtPrice && (
               <div className="laam-compare">
                 PKR {compareAtPrice.toLocaleString("en-PK")}
@@ -148,18 +111,17 @@ export default function ProductCard({
             )}
           </div>
 
+          {/* 🔥 ADD TO CART ICON */}
           <button
             type="button"
             className="laam-add-btn"
-            onClick={handleQuickAdd}
+            onClick={(e) => {
+              e.preventDefault();
+              handleQuickAdd();
+            }}
             aria-label="Add to cart"
-            disabled={adding}
           >
-            {adding ? (
-              <span className="text-xs">Adding…</span>
-            ) : (
-              <FaShoppingBag size={16} />
-            )}
+            <FaShoppingBag size={16} />
           </button>
         </div>
 

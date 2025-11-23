@@ -15,30 +15,31 @@ type CartContextType = {
   count: number;
   subtotal: number;
   isOpen: boolean;
-  lastCheckoutUrl: string | null;
+  checkoutUrl: string | null;
 
   openDrawer: () => void;
   closeDrawer: () => void;
   toggleDrawer: () => void;
+
   addItem: (item: CartItem, checkoutUrl?: string | null) => void;
   removeItem: (id: string) => void;
-  setCheckoutUrl: (url: string | null) => void;
 };
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
+  const [checkoutUrl, setCheckoutUrl] = useState<string | null>(null);
   const [isOpen, setIsOpen] = useState(false);
-  const [lastCheckoutUrl, setLastCheckoutUrl] = useState<string | null>(null);
 
   const count = useMemo(
-    () => items.reduce((sum, item) => sum + item.quantity, 0),
+    () => items.reduce((sum, i) => sum + i.quantity, 0),
     [items]
   );
 
   const subtotal = useMemo(
-    () => items.reduce((sum, item) => sum + item.price * item.quantity, 0),
+    () =>
+      items.reduce((total, item) => total + item.price * item.quantity, 0),
     [items]
   );
 
@@ -46,27 +47,28 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const closeDrawer = () => setIsOpen(false);
   const toggleDrawer = () => setIsOpen((v) => !v);
 
-  const addItem = (item: CartItem, checkoutUrl?: string | null) => {
+  const addItem = (item: CartItem, url?: string | null) => {
     setItems((prev) => {
       const existing = prev.find(
         (p) => p.id === item.id && p.variantTitle === item.variantTitle
       );
+
       if (existing) {
         return prev.map((p) =>
           p === existing ? { ...p, quantity: p.quantity + item.quantity } : p
         );
       }
+
       return [...prev, item];
     });
 
-    if (checkoutUrl) setLastCheckoutUrl(checkoutUrl);
+    if (url) setCheckoutUrl(url);
 
-    setIsOpen(true);
+    openDrawer();
   };
 
-  const removeItem = (id: string) => {
+  const removeItem = (id: string) =>
     setItems((prev) => prev.filter((p) => p.id !== id));
-  };
 
   return (
     <CartContext.Provider
@@ -75,13 +77,12 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         count,
         subtotal,
         isOpen,
-        lastCheckoutUrl,
+        checkoutUrl,
         openDrawer,
         closeDrawer,
         toggleDrawer,
         addItem,
         removeItem,
-        setCheckoutUrl: setLastCheckoutUrl,
       }}
     >
       {children}
@@ -91,6 +92,6 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
 export function useCart() {
   const ctx = useContext(CartContext);
-  if (!ctx) throw new Error("useCart must be used inside CartProvider");
+  if (!ctx) throw new Error("useCart must be used inside provider");
   return ctx;
 }
