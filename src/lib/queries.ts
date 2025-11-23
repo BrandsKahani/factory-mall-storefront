@@ -325,3 +325,25 @@ export const BRAND_PRODUCTS_SOURCE = /* GraphQL */ `
     }
   }
 `;
+// ============================
+// COLLECTION SLIDER BY KEY
+//  - HomeCollections.tsx use karta hai
+//  - "key" variable se collections search karega
+// ============================
+export const COLLECTION_SLIDER_BY_KEY = /* GraphQL */ `
+  query CollectionSliderByKey($key: String!) {
+    collections(first: 6, query: $key) {
+      edges {
+        node {
+          id
+          handle
+          title
+          image {
+            url
+            altText
+          }
+        }
+      }
+    }
+  }
+`;
