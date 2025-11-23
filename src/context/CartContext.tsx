@@ -1,3 +1,4 @@
+// src/context/CartContext.tsx
 "use client";
 
 import React, { createContext, useContext, useMemo, useState } from "react";
@@ -15,31 +16,30 @@ type CartContextType = {
   count: number;
   subtotal: number;
   isOpen: boolean;
-  checkoutUrl: string | null;
+  lastCheckoutUrl: string | null;
 
   openDrawer: () => void;
   closeDrawer: () => void;
   toggleDrawer: () => void;
-
   addItem: (item: CartItem, checkoutUrl?: string | null) => void;
   removeItem: (id: string) => void;
+  setCheckoutUrl: (url: string | null) => void;
 };
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
-  const [checkoutUrl, setCheckoutUrl] = useState<string | null>(null);
   const [isOpen, setIsOpen] = useState(false);
+  const [lastCheckoutUrl, setLastCheckoutUrl] = useState<string | null>(null);
 
   const count = useMemo(
-    () => items.reduce((sum, i) => sum + i.quantity, 0),
+    () => items.reduce((sum, item) => sum + item.quantity, 0),
     [items]
   );
 
   const subtotal = useMemo(
-    () =>
-      items.reduce((total, item) => total + item.price * item.quantity, 0),
+    () => items.reduce((sum, item) => sum + item.price * item.quantity, 0),
     [items]
   );
 
@@ -47,28 +47,35 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const closeDrawer = () => setIsOpen(false);
   const toggleDrawer = () => setIsOpen((v) => !v);
 
-  const addItem = (item: CartItem, url?: string | null) => {
+  const addItem = (item: CartItem, checkoutUrl?: string | null) => {
     setItems((prev) => {
-      const existing = prev.find(
+      const index = prev.findIndex(
         (p) => p.id === item.id && p.variantTitle === item.variantTitle
       );
 
-      if (existing) {
-        return prev.map((p) =>
-          p === existing ? { ...p, quantity: p.quantity + item.quantity } : p
-        );
+      if (index !== -1) {
+        const next = [...prev];
+        const existing = next[index];
+        next[index] = {
+          ...existing,
+          quantity: existing.quantity + item.quantity,
+        };
+        return next;
       }
 
       return [...prev, item];
     });
 
-    if (url) setCheckoutUrl(url);
+    if (checkoutUrl) {
+      setLastCheckoutUrl(checkoutUrl);
+    }
 
-    openDrawer();
+    setIsOpen(true);
   };
 
-  const removeItem = (id: string) =>
+  const removeItem = (id: string) => {
     setItems((prev) => prev.filter((p) => p.id !== id));
+  };
 
   return (
     <CartContext.Provider
@@ -77,12 +84,13 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         count,
         subtotal,
         isOpen,
-        checkoutUrl,
+        lastCheckoutUrl,
         openDrawer,
         closeDrawer,
         toggleDrawer,
         addItem,
         removeItem,
+        setCheckoutUrl: setLastCheckoutUrl,
       }}
     >
       {children}
@@ -92,6 +100,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
 export function useCart() {
   const ctx = useContext(CartContext);
-  if (!ctx) throw new Error("useCart must be used inside provider");
+  if (!ctx) {
+    throw new Error("useCart must be used inside CartProvider");
+  }
   return ctx;
 }

@@ -1,85 +1,68 @@
+// src/app/api/cart/route.ts
 import { shopifyFetch } from "@/lib/shopify";
-import { NextResponse } from "next/server";
+
+// agar future me domain change karo to sirf yahan update karna
+const SHOPIFY_CHECKOUT_DOMAIN = "ut3g5g-i6.myshopify.com";
 
 export async function POST(req: Request) {
   try {
     const { lines } = await req.json();
 
-    if (!lines || !Array.isArray(lines)) {
-      return NextResponse.json({ ok: false, message: "Missing lines" });
+    if (!Array.isArray(lines) || lines.length === 0) {
+      return Response.json(
+        { ok: false, message: "No cart lines provided" },
+        { status: 400 }
+      );
     }
 
-    // Step 1 — create cart
-    const createRes = await shopifyFetch<any>(`
-      mutation {
-        cartCreate {
-          cart {
-            id
-          }
-        }
-      }
-    `);
-
-    const cartId = createRes?.data?.cartCreate?.cart?.id;
-    if (!cartId) {
-      return NextResponse.json({ ok: false, message: "Cart creation failed" });
-    }
-
-    // Step 2 — add items
-    const addRes = await shopifyFetch<any>(
+    const result = await shopifyFetch<any>(
       `
-      mutation CartLinesAdd($cartId: ID!, $lines: [CartLineInput!]!) {
-        cartLinesAdd(cartId: $cartId, lines: $lines) {
+      mutation CartCreate($lines: [CartLineInput!]!) {
+        cartCreate(input: { lines: $lines }) {
           cart {
             id
             checkoutUrl
-            lines(first: 20) {
-              edges {
-                node {
-                  id
-                  quantity
-                  merchandise {
-                    ... on ProductVariant {
-                      id
-                      title
-                      product {
-                        title
-                        handle
-                      }
-                      price {
-                        amount
-                      }
-                    }
-                  }
-                }
-              }
-            }
+          }
+          userErrors {
+            field
+            message
           }
         }
       }
     `,
-      { cartId, lines }
+      { lines }
     );
 
-    const cart = addRes?.data?.cartLinesAdd?.cart;
+    const cart = result?.data?.cartCreate?.cart;
+    const userErrors = result?.data?.cartCreate?.userErrors;
+
     if (!cart) {
-      return NextResponse.json({ ok: false, message: "Add lines failed" });
+      console.error("Shopify cartCreate error", userErrors);
+      return Response.json(
+        { ok: false, message: "Cart error", userErrors },
+        { status: 500 }
+      );
     }
 
-    // Fix checkout URL
-    const fixedCheckoutUrl = cart.checkoutUrl.replace(
-      "factorymall.pk",
-      "ut3g5g-i6.myshopify.com"
-    );
+    let checkoutUrl: string = cart.checkoutUrl;
 
-    return NextResponse.json({
+    // 🔥 yahan custom domain ko hamisha myshopify.com se replace kar rahe hain
+    if (checkoutUrl.includes("factorymall.pk")) {
+      checkoutUrl = checkoutUrl.replace("factorymall.pk", SHOPIFY_CHECKOUT_DOMAIN);
+    }
+
+    return Response.json({
       ok: true,
       cart: {
-        ...cart,
-        checkoutUrl: fixedCheckoutUrl,
+        id: cart.id,
+        checkoutUrl,
       },
     });
   } catch (err) {
-    return NextResponse.json({ ok: false, error: err });
+    console.error("Cart route error", err);
+    return Response.json(
+      { ok: false, message: "Server error creating cart" },
+      { status: 500 }
+    );
   }
 }

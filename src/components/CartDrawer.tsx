@@ -1,50 +1,64 @@
+// src/components/CartDrawer.tsx
 "use client";
 
 import { useCart } from "@/context/CartContext";
 
 export default function CartDrawer() {
-  const { items, subtotal, count, isOpen, closeDrawer, removeItem, checkoutUrl } =
-    useCart();
+  const {
+    items,
+    subtotal,
+    count,
+    isOpen,
+    closeDrawer,
+    removeItem,
+    lastCheckoutUrl,
+  } = useCart();
 
   if (!isOpen) return null;
 
+  const handleCheckoutClick = () => {
+    if (!lastCheckoutUrl) return;
+    window.location.href = lastCheckoutUrl; // Shopify checkout
+  };
+
   return (
-    <div className="fixed inset-0 bg-black/40 z-50 flex justify-end">
-      <div className="bg-white h-full w-full max-w-md p-5 shadow-xl relative">
+    <div className="fixed inset-0 bg-black/40 z-[9999] flex justify-end">
+      <div className="bg-white w-full max-w-md h-full p-5 shadow-xl relative">
         <button
-          className="absolute top-3 right-3 text-sm underline"
           onClick={closeDrawer}
+          className="absolute right-4 top-4 text-sm underline"
         >
           Close
         </button>
 
-        <h2 className="text-lg font-semibold mb-4">Shopping Bag ({count})</h2>
+        <h2 className="text-lg font-semibold mb-5">
+          Shopping Bag ({count})
+        </h2>
 
         {items.length === 0 ? (
-          <p>Your bag is empty.</p>
+          <p className="text-sm text-gray-600">Your cart is empty.</p>
         ) : (
           <>
-            <div className="max-h-[60vh] overflow-y-auto pr-2 space-y-3">
-              {items.map((item) => (
-                <div
-                  key={item.id + item.variantTitle}
-                  className="border-b pb-2 flex justify-between"
-                >
-                  <div>
-                    <div className="font-medium">{item.title}</div>
-                    {item.variantTitle && (
-                      <div className="text-xs text-gray-600">
-                        {item.variantTitle}
-                      </div>
-                    )}
-                    <div className="text-xs">Qty: {item.quantity}</div>
+            <div className="max-h-[60vh] overflow-auto space-y-4 pr-2">
+              {items.map((i) => (
+                <div key={i.id} className="border-b pb-3 text-sm">
+                  <div className="font-medium">{i.title}</div>
+                  {i.variantTitle && (
+                    <div className="text-xs text-gray-500">
+                      {i.variantTitle}
+                    </div>
+                  )}
+                  <div className="text-xs text-gray-500">
+                    Qty: {i.quantity}
                   </div>
 
-                  <div className="text-right">
-                    PKR {Math.round(item.price * item.quantity).toLocaleString()}
+                  <div className="flex justify-between mt-2">
+                    <span>
+                      PKR {(i.price * i.quantity).toLocaleString("en-PK")}
+                    </span>
                     <button
-                      className="block text-xs underline mt-1"
-                      onClick={() => removeItem(item.id)}
+                      className="text-red-500 underline text-xs"
+                      onClick={() => removeItem(i.id)}
                     >
                       Remove
                     </button>
@@ -53,18 +67,27 @@ export default function CartDrawer() {
               ))}
             </div>
 
-            <div className="border-t pt-4 mt-4">
-              <div className="flex justify-between text-sm mb-3">
+            <div className="border-t mt-4 pt-4">
+              <div className="flex justify-between mb-3 font-medium">
                 <span>Subtotal</span>
-                <span>PKR {subtotal.toLocaleString()}</span>
+                <span>
+                  PKR {Math.round(subtotal).toLocaleString("en-PK")}
+                </span>
               </div>
 
               <button
                 className="pdp-addtocart-btn w-full"
-                onClick={() => checkoutUrl && (window.location.href = checkoutUrl)}
+                disabled={!lastCheckoutUrl}
+                onClick={handleCheckoutClick}
               >
                 Secure Checkout
               </button>
+
+              {!lastCheckoutUrl && (
+                <p className="text-[11px] text-gray-500 mt-2">
+                  Add an item again to generate checkout link.
+                </p>
+              )}
             </div>
           </>
         )}

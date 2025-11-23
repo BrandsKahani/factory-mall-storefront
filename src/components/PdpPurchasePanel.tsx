@@ -82,7 +82,7 @@ export default function PdpPurchasePanel({
     (selectedVariant.quantityAvailable ?? 0) > 0 &&
     (selectedVariant.quantityAvailable ?? 0) <= 5;
 
-  // ---------- ADD TO BAG ----------
+  // 🔥 ADD TO BAG → Shopify /api/cart + local drawer update
   const handleAddToBag = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -111,7 +111,7 @@ export default function PdpPurchasePanel({
         return;
       }
 
-      // Local cart state update + drawer open
+      // Local cart drawer + Shopify checkout URL
       addItem(
         {
           id: selectedVariant.id,
@@ -120,7 +120,7 @@ export default function PdpPurchasePanel({
           price: effectivePrice,
           quantity: qty,
         },
-        data.cart.checkoutUrl // normalized url from API
+        data.cart.checkoutUrl
       );
     } catch (err) {
       console.error("Add to cart failed", err);
@@ -132,11 +132,11 @@ export default function PdpPurchasePanel({
   return (
     <>
       <div>
-        {/* BRAND + TITLE */}
+        {/* BRAND / VENDOR + TITLE */}
         {vendor && <div className="pdp-vendor">{vendor}</div>}
         <h1 className="pdp-title">{title}</h1>
 
-        {/* PRICE */}
+        {/* PRICE + COMPARE + DISCOUNT */}
         <div className="pdp-price-row">
           <div className="pdp-price-main">
             PKR {effectivePrice.toLocaleString("en-PK")}
@@ -154,21 +154,23 @@ export default function PdpPurchasePanel({
           )}
         </div>
 
-        {/* LOW STOCK */}
+        {/* THIN LOW-STOCK LINE */}
         {showLowStockLine && (
           <div className="pdp-low-stock">
             Only a few pieces left — order soon!
           </div>
         )}
 
-        {/* INFO CARD */}
+        {/* EXPRESS / SHIPPING / RETURN INFO CARD */}
         <div className="pdp-info-card">
           <div className="pdp-info-row">
             <span className="pdp-info-icon">
               <FiZap size={18} />
             </span>
             <div>
-              <div className="pdp-info-title">Instant dispatch, no delays</div>
+              <div className="pdp-info-title">
+                Instant dispatch, no delays
+              </div>
               <div className="pdp-info-sub">
                 Orders ship quickly from Factory Mall warehouse.
               </div>
@@ -202,7 +204,7 @@ export default function PdpPurchasePanel({
           </div>
         </div>
 
-        {/* SIZE SELECTOR */}
+        {/* SIZE + SIZE CHART + PIECES LABELS */}
         {variants.length > 0 && (
           <div className="pdp-section">
             <div className="pdp-section-header">
@@ -241,24 +243,31 @@ export default function PdpPurchasePanel({
           </div>
         )}
 
-        {/* QUANTITY */}
+        {/* QUANTITY STEPPER */}
         <div className="pdp-section">
           <div className="pdp-section-label">Quantity</div>
-
           <div className="pdp-qty-row">
-            <button type="button" className="pdp-qty-btn" onClick={decQty}>
+            <button
+              type="button"
+              className="pdp-qty-btn"
+              aria-label="Decrease quantity"
+              onClick={decQty}
+            >
               –
             </button>
-
             <div className="pdp-qty-value">{qty}</div>
-
-            <button type="button" className="pdp-qty-btn" onClick={incQty}>
+            <button
+              type="button"
+              className="pdp-qty-btn"
+              aria-label="Increase quantity"
+              onClick={incQty}
+            >
               +
             </button>
           </div>
         </div>
 
-        {/* ADD TO BAG */}
+        {/* ADD TO BAG BUTTON */}
         <form onSubmit={handleAddToBag} className="pdp-addtocart-form">
           <button
             type="submit"
@@ -278,12 +287,12 @@ export default function PdpPurchasePanel({
           <div className="pdp-section-label">Highlights</div>
           <ul className="pdp-highlights">
             <li>Premium quality fabric & finishing</li>
-            <li>Ready to wear / unstitched</li>
-            <li>Nationwide delivery</li>
+            <li>Ready to wear / unstitched as per product</li>
+            <li>Nationwide delivery from Factory Mall</li>
           </ul>
         </div>
 
-        {/* DESCRIPTION */}
+        {/* DESCRIPTION – neat & clean under Add to Bag */}
         <div className="pdp-section">
           <div className="pdp-section-label">Description</div>
           <div className="pdp-description">
