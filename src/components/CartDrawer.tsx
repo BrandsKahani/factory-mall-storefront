@@ -3,7 +3,7 @@
 
 import { useCart } from "@/context/CartContext";
 
-// 👉 yahan apna Shopify "myshopify" domain daal do
+// 👉 Yahan apna myshopify domain
 const SHOPIFY_CHECKOUT_DOMAIN = "ut3g5g-i6.myshopify.com";
 
 export default function CartDrawer() {
@@ -22,23 +22,27 @@ export default function CartDrawer() {
   const handleCheckout = () => {
     if (!checkoutUrl) return;
 
-    // checkoutUrl ka sirf path + query use karenge
+    let finalUrl = checkoutUrl;
+
     try {
+      // checkoutUrl ko parse karo
       const url = new URL(checkoutUrl);
 
-      // force Shopify domain
+      // host ko Shopify wale domain se replace karo
       url.protocol = "https:";
       url.host = SHOPIFY_CHECKOUT_DOMAIN;
 
-      window.location.href = url.toString();
+      finalUrl = url.toString();
     } catch (e) {
-      // agar URL constructor fail ho jaye to regex se host replace kar do
-      const fixed = checkoutUrl.replace(
+      // Agar URL constructor fail ho jaye to regex se host replace:
+      finalUrl = checkoutUrl.replace(
         /^https?:\/\/[^/]+/,
         `https://${SHOPIFY_CHECKOUT_DOMAIN}`
       );
-      window.location.href = fixed;
     }
+
+    console.log("Redirecting to Shopify checkout:", finalUrl);
+    window.location.href = finalUrl;
   };
 
   return (
@@ -89,7 +93,9 @@ export default function CartDrawer() {
                 <span>PKR {Math.round(subtotal).toLocaleString()}</span>
               </div>
 
+              {/* IMPORTANT: type="button" + onClick */}
               <button
+                type="button"
                 className="cart-checkout-btn"
                 onClick={handleCheckout}
                 disabled={!checkoutUrl}
