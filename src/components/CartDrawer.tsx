@@ -3,7 +3,7 @@
 
 import { useCart } from "@/context/CartContext";
 
-// 👉 Yahan apna myshopify domain
+// 👉 Yahan apna Shopify myshopify domain
 const SHOPIFY_CHECKOUT_DOMAIN = "ut3g5g-i6.myshopify.com";
 
 export default function CartDrawer() {
@@ -22,23 +22,28 @@ export default function CartDrawer() {
   const handleCheckout = () => {
     if (!checkoutUrl) return;
 
-    let finalUrl = checkoutUrl;
+    let finalUrl = "";
 
-    try {
-      // checkoutUrl ko parse karo
-      const url = new URL(checkoutUrl);
-
-      // host ko Shopify wale domain se replace karo
-      url.protocol = "https:";
-      url.host = SHOPIFY_CHECKOUT_DOMAIN;
-
-      finalUrl = url.toString();
-    } catch (e) {
-      // Agar URL constructor fail ho jaye to regex se host replace:
-      finalUrl = checkoutUrl.replace(
-        /^https?:\/\/[^/]+/,
-        `https://${SHOPIFY_CHECKOUT_DOMAIN}`
-      );
+    if (checkoutUrl.startsWith("http")) {
+      // ABSOLUTE URL (https://factorymall.pk/cart/...)
+      try {
+        const url = new URL(checkoutUrl);
+        url.protocol = "https:";
+        url.host = SHOPIFY_CHECKOUT_DOMAIN;
+        finalUrl = url.toString();
+      } catch {
+        // agar parsing fail ho jaye to fallback
+        finalUrl = `https://${SHOPIFY_CHECKOUT_DOMAIN}/cart`;
+      }
+    } else if (checkoutUrl.startsWith("/")) {
+      // RELATIVE URL (/cart/c/...)
+      finalUrl = `https://${SHOPIFY_CHECKOUT_DOMAIN}${checkoutUrl}`;
+    } else {
+      // koi aur relative form (cart/c/...)
+      finalUrl = `https://${SHOPIFY_CHECKOUT_DOMAIN}/${checkoutUrl.replace(
+        /^\/+/,
+        ""
+      )}`;
     }
 
     console.log("Redirecting to Shopify checkout:", finalUrl);
@@ -93,7 +98,6 @@ export default function CartDrawer() {
                 <span>PKR {Math.round(subtotal).toLocaleString()}</span>
               </div>
 
-              {/* IMPORTANT: type="button" + onClick */}
               <button
                 type="button"
                 className="cart-checkout-btn"
