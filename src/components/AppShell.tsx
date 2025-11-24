@@ -1,10 +1,18 @@
-import SidebarNav from "@/components/SidebarNav";
+// src/components/AppShell.tsx
 
-export default function AppShell({ children }: { children: React.ReactNode }) {
+export default function AppShell({ sidebar, children }: {
+  sidebar: React.ReactNode;
+  children: React.ReactNode;
+}) {
   return (
     <div className="app-shell">
-      <SidebarNav />
-      <div className="app-main">{children}</div>
+      <aside className="sidebar-nav">
+        {sidebar}
+      </aside>
+
+      <main className="app-main">
+        {children}
+      </main>
     </div>
   );
 }

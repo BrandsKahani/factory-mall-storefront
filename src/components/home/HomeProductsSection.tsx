@@ -1,3 +1,4 @@
+// src/components/home/HomeProductsSection.tsx
 import ProductCard from "@/components/ProductCard";
 import { shopifyFetch } from "@/lib/shopify";
 import { HOME_PRODUCTS } from "@/lib/queries";
@@ -20,29 +21,21 @@ export default async function HomeProductsSection({
 
     const firstVariant = n.variants?.edges?.[0]?.node ?? null;
 
-    const price = firstVariant?.price?.amount
-      ? Number(firstVariant.price.amount)
-      : 0;
-
-    const compareAtPrice =
-      firstVariant?.compareAtPrice?.amount != null
-        ? Number(firstVariant.compareAtPrice.amount)
-        : null;
-
     return {
       handle: n.handle,
       title: n.title,
       vendor: n.vendor,
       image: firstImage,
       hoverImage: secondImage,
-      price,
-      compareAtPrice,
+      price: Number(firstVariant?.price?.amount ?? 0),
+      compareAtPrice: firstVariant?.compareAtPrice?.amount
+        ? Number(firstVariant.compareAtPrice.amount)
+        : null,
       variantId: firstVariant?.id ?? null,
       variantTitle: firstVariant?.title ?? null,
     };
   });
 
-  // Future logic
   if (queryType === "trending") products = products.slice(0, 8);
   if (queryType === "new") products = products.slice(0, 8);
   if (queryType === "best") products = products.slice(0, 8);

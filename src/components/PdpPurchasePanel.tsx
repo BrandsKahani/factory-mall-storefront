@@ -35,8 +35,9 @@ export default function PdpPurchasePanel({
 }: Props) {
   const { addItem } = useCart();
 
-  const [selectedVariantId, setSelectedVariantId] =
-    React.useState<string | null>(variants[0]?.id ?? null);
+  const [selectedVariantId, setSelectedVariantId] = React.useState<
+    string | null
+  >(variants[0]?.id ?? null);
   const [qty, setQty] = React.useState(1);
   const [loading, setLoading] = React.useState(false);
   const [sizeChartOpen, setSizeChartOpen] = React.useState(false);
@@ -82,7 +83,9 @@ export default function PdpPurchasePanel({
     (selectedVariant.quantityAvailable ?? 0) > 0 &&
     (selectedVariant.quantityAvailable ?? 0) <= 5;
 
-  // 🔥 ADD TO BAG → Shopify /api/cart + local drawer update
+  // -------------------------------
+  // ADD TO BAG -> Shopify Cart API
+  // -------------------------------
   const handleAddToBag = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -106,12 +109,13 @@ export default function PdpPurchasePanel({
 
       const data = await res.json();
 
-      if (!res.ok || !data.ok || !data.cart) {
+      if (!res.ok || !data.ok || !data.cart?.checkoutUrl) {
         console.error("Cart error", data);
+        alert("Unable to add to cart right now. Please try again.");
         return;
       }
 
-      // Local cart drawer + Shopify checkout URL
+      // Local cart (drawer) update
       addItem(
         {
           id: selectedVariant.id,
@@ -120,10 +124,11 @@ export default function PdpPurchasePanel({
           price: effectivePrice,
           quantity: qty,
         },
-        data.cart.checkoutUrl
+        data.cart.checkoutUrl // => CartDrawer se secure checkout karega
       );
     } catch (err) {
       console.error("Add to cart failed", err);
+      alert("Something went wrong while adding to cart.");
     } finally {
       setLoading(false);
     }
@@ -132,11 +137,11 @@ export default function PdpPurchasePanel({
   return (
     <>
       <div>
-        {/* BRAND / VENDOR + TITLE */}
+        {/* BRAND + TITLE */}
         {vendor && <div className="pdp-vendor">{vendor}</div>}
         <h1 className="pdp-title">{title}</h1>
 
-        {/* PRICE + COMPARE + DISCOUNT */}
+        {/* PRICE */}
         <div className="pdp-price-row">
           <div className="pdp-price-main">
             PKR {effectivePrice.toLocaleString("en-PK")}
@@ -154,23 +159,21 @@ export default function PdpPurchasePanel({
           )}
         </div>
 
-        {/* THIN LOW-STOCK LINE */}
+        {/* LOW STOCK */}
         {showLowStockLine && (
           <div className="pdp-low-stock">
             Only a few pieces left — order soon!
           </div>
         )}
 
-        {/* EXPRESS / SHIPPING / RETURN INFO CARD */}
+        {/* INFO CARD */}
         <div className="pdp-info-card">
           <div className="pdp-info-row">
             <span className="pdp-info-icon">
               <FiZap size={18} />
             </span>
             <div>
-              <div className="pdp-info-title">
-                Instant dispatch, no delays
-              </div>
+              <div className="pdp-info-title">Instant dispatch, no delays</div>
               <div className="pdp-info-sub">
                 Orders ship quickly from Factory Mall warehouse.
               </div>
@@ -204,7 +207,7 @@ export default function PdpPurchasePanel({
           </div>
         </div>
 
-        {/* SIZE + SIZE CHART + PIECES LABELS */}
+        {/* SIZE SELECTOR */}
         {variants.length > 0 && (
           <div className="pdp-section">
             <div className="pdp-section-header">
@@ -243,31 +246,34 @@ export default function PdpPurchasePanel({
           </div>
         )}
 
-        {/* QUANTITY STEPPER */}
+        {/* QUANTITY */}
         <div className="pdp-section">
           <div className="pdp-section-label">Quantity</div>
+
           <div className="pdp-qty-row">
             <button
               type="button"
               className="pdp-qty-btn"
-              aria-label="Decrease quantity"
               onClick={decQty}
+              disabled={qty <= 1}
             >
               –
             </button>
+
             <div className="pdp-qty-value">{qty}</div>
+
             <button
               type="button"
               className="pdp-qty-btn"
-              aria-label="Increase quantity"
               onClick={incQty}
+              disabled={qty >= maxQty}
             >
               +
             </button>
           </div>
         </div>
 
-        {/* ADD TO BAG BUTTON */}
+        {/* ADD TO BAG */}
         <form onSubmit={handleAddToBag} className="pdp-addtocart-form">
           <button
             type="submit"
@@ -287,12 +293,12 @@ export default function PdpPurchasePanel({
           <div className="pdp-section-label">Highlights</div>
           <ul className="pdp-highlights">
             <li>Premium quality fabric & finishing</li>
-            <li>Ready to wear / unstitched as per product</li>
-            <li>Nationwide delivery from Factory Mall</li>
+            <li>Ready to wear / unstitched</li>
+            <li>Nationwide delivery</li>
           </ul>
         </div>
 
-        {/* DESCRIPTION – neat & clean under Add to Bag */}
+        {/* DESCRIPTION */}
         <div className="pdp-section">
           <div className="pdp-section-label">Description</div>
           <div className="pdp-description">

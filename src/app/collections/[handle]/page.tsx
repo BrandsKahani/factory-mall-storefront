@@ -1,8 +1,6 @@
 // src/app/collections/[handle]/page.tsx
 import Sidebar from "@/components/SidebarNav";
-import ProductCard, {
-  ProductCardProps,
-} from "@/components/ProductCard";
+import ProductCard, { ProductCardProps } from "@/components/ProductCard";
 import { shopifyFetch } from "@/lib/shopify";
 import { COLLECTION_BY_HANDLE } from "@/lib/queries";
 
@@ -35,14 +33,10 @@ export default async function CollectionPage({ params }: PageProps) {
   const products: ProductCardProps[] =
     (c.products?.edges ?? []).map((e: any) => {
       const n = e.node;
+
       const firstImage = n.images?.edges?.[0]?.node ?? null;
       const secondImage = n.images?.edges?.[1]?.node ?? null;
-      const firstVariant = n.variants?.edges?.[0]?.node;
-
-      const price = Number(firstVariant?.price?.amount ?? 0);
-      const compareAt = firstVariant?.compareAtPrice?.amount
-        ? Number(firstVariant.compareAtPrice.amount)
-        : null;
+      const firstVariant = n.variants?.edges?.[0]?.node ?? null;
 
       return {
         handle: n.handle,
@@ -50,8 +44,14 @@ export default async function CollectionPage({ params }: PageProps) {
         vendor: n.vendor,
         image: firstImage,
         hoverImage: secondImage,
-        price,
-        compareAtPrice: compareAt,
+        price: Number(firstVariant?.price?.amount ?? 0),
+        compareAtPrice: firstVariant?.compareAtPrice?.amount
+          ? Number(firstVariant.compareAtPrice.amount)
+          : null,
+
+        // 🔥 REQUIRED FOR QUICK ADD
+        variantId: firstVariant?.id ?? null,
+        variantTitle: firstVariant?.title ?? null,
       };
     }) ?? [];
 

@@ -1,12 +1,17 @@
-import type { Metadata } from "next";
+// src/app/layout.tsx
 import "./globals.css";
+import type { Metadata } from "next";
+import { Inter } from "next/font/google";
+
 import { CartProvider } from "@/context/CartContext";
-import CartDrawer from "@/components/CartDrawer";
 import Header from "@/components/Header";
+import CartDrawer from "@/components/CartDrawer";
+
+const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "Factory Mall",
-  description: "Factory Mall Storefront",
+  description: "Fashion & Lifestyle Store",
 };
 
 export default function RootLayout({
@@ -16,13 +21,18 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>
+      <body className={inter.className}>
         <CartProvider>
-          {/* Header globally yahan se aa raha ho to theek hai */}
+          
+          {/* GLOBAL HEADER */}
           <Header />
-          {/* CartDrawer hamesha mount rahega */}
+
+          {/* CART DRAWER ALWAYS IN ROOT */}
           <CartDrawer />
-          {children}
+
+          {/* MAIN APP CONTENT */}
+          <main className="min-h-screen">{children}</main>
+
         </CartProvider>
       </body>
     </html>
