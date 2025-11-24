@@ -1,4 +1,3 @@
-// src/context/CartContext.tsx
 "use client";
 
 import React, { createContext, useContext, useMemo, useState } from "react";
@@ -17,7 +16,6 @@ type CartContextType = {
   subtotal: number;
   isOpen: boolean;
   lastCheckoutUrl: string | null;
-
   openDrawer: () => void;
   closeDrawer: () => void;
   toggleDrawer: () => void;
@@ -49,20 +47,14 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   const addItem = (item: CartItem, checkoutUrl?: string | null) => {
     setItems((prev) => {
-      const index = prev.findIndex(
+      const existing = prev.find(
         (p) => p.id === item.id && p.variantTitle === item.variantTitle
       );
-
-      if (index !== -1) {
-        const next = [...prev];
-        const existing = next[index];
-        next[index] = {
-          ...existing,
-          quantity: existing.quantity + item.quantity,
-        };
-        return next;
+      if (existing) {
+        return prev.map((p) =>
+          p === existing ? { ...p, quantity: p.quantity + item.quantity } : p
+        );
       }
-
       return [...prev, item];
     });
 
@@ -77,31 +69,27 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     setItems((prev) => prev.filter((p) => p.id !== id));
   };
 
-  return (
-    <CartContext.Provider
-      value={{
-        items,
-        count,
-        subtotal,
-        isOpen,
-        lastCheckoutUrl,
-        openDrawer,
-        closeDrawer,
-        toggleDrawer,
-        addItem,
-        removeItem,
-        setCheckoutUrl: setLastCheckoutUrl,
-      }}
-    >
-      {children}
-    </CartContext.Provider>
-  );
+  const value: CartContextType = {
+    items,
+    count,
+    subtotal,
+    isOpen,
+    lastCheckoutUrl,
+    openDrawer,
+    closeDrawer,
+    toggleDrawer,
+    addItem,
+    removeItem,
+    setCheckoutUrl: setLastCheckoutUrl,
+  };
+
+  return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }
 
 export function useCart() {
   const ctx = useContext(CartContext);
   if (!ctx) {
-    throw new Error("useCart must be used inside CartProvider");
+    throw new Error("useCart must be used within CartProvider");
   }
   return ctx;
 }

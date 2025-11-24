@@ -1,19 +1,19 @@
 "use client";
 
-import Link from "next/link";
 import { useState } from "react";
+import Link from "next/link";
 import { useCart } from "@/context/CartContext";
-import { FaRegHeart, FaHeart, FaShoppingBag } from "react-icons/fa";
+import { FaShoppingBag, FaHeart, FaRegHeart } from "react-icons/fa";
 
 export type ProductCardProps = {
   handle: string;
   title: string;
   vendor?: string;
-  image?: any;
-  hoverImage?: any;
+  image?: { url: string; altText?: string | null };
+  hoverImage?: { url: string; altText?: string | null };
   price: number;
   compareAtPrice?: number | null;
-  variantId: string;           // 🔥 Required for cart
+  variantId?: string;
   variantTitle?: string | null;
 };
 
@@ -28,26 +28,67 @@ export default function ProductCard({
   variantId,
   variantTitle,
 }: ProductCardProps) {
-  const [wish, setWish] = useState(false);
   const { addItem } = useCart();
+  const [wish, setWish] = useState(false);
+  const [adding, setAdding] = useState(false);
 
   const discount =
     compareAtPrice && compareAtPrice > price
       ? Math.round(((compareAtPrice - price) / compareAtPrice) * 100)
       : null;
 
-  // 🔥 QUICK ADD HANDLER
-  const handleQuickAdd = () => {
-    addItem(
-      {
-        id: variantId,
-        title,
-        variantTitle,
-        price,
-        quantity: 1,
-      },
-      null
-    );
+  const hasQuickAdd = !!variantId;
+
+  const handleQuickAdd = async (e: React.MouseEvent) => {
+    e.preventDefault();
+
+    // agar variantId hi nahi mila to PDP par bhej do
+    if (!variantId) {
+      window.location.href = `/products/${handle}`;
+      return;
+    }
+
+    try {
+      setAdding(true);
+
+      const res = await fetch("/api/cart", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          lines: [
+            {
+              merchandiseId: variantId,
+              quantity: 1,
+            },
+          ],
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok || !data.ok || !data.cart?.checkoutUrl) {
+        console.error("Quick add cart error", data);
+        alert("Unable to add to cart right now. Please try again.");
+        return;
+      }
+
+      // Local drawer cart update
+      addItem(
+        {
+          id: variantId,
+          title,
+          variantTitle: variantTitle ?? null,
+          price,
+          quantity: 1,
+        },
+        data.cart.checkoutUrl
+      );
+    } catch (err) {
+      console.error("Quick add failed", err);
+      alert("Something went wrong while adding to cart.");
+    } finally {
+      setAdding(false);
+    }
   };
 
   return (
@@ -57,7 +98,7 @@ export default function ProductCard({
         {image && (
           <img
             src={image.url}
-            alt={title}
+            alt={image.altText || title}
             className="laam-card-img main-img"
           />
         )}
@@ -65,12 +106,12 @@ export default function ProductCard({
         {hoverImage && (
           <img
             src={hoverImage.url}
-            alt={title}
+            alt={hoverImage.altText || title}
             className="laam-card-img hover-img"
           />
         )}
 
-        {/* BADGE + HEART */}
+        {/* TOP BADGES + WISHLIST */}
         <div className="laam-card-top">
           {discount && (
             <span className="laam-discount-badge">-{discount}%</span>
@@ -98,12 +139,12 @@ export default function ProductCard({
           {title}
         </Link>
 
+        {/* PRICE + QUICK ADD */}
         <div className="laam-price-row">
           <div>
             <div className="laam-price">
               PKR {price.toLocaleString("en-PK")}
             </div>
-
             {compareAtPrice && (
               <div className="laam-compare">
                 PKR {compareAtPrice.toLocaleString("en-PK")}
@@ -111,14 +152,11 @@ export default function ProductCard({
             )}
           </div>
 
-          {/* 🔥 ADD TO CART ICON */}
           <button
             type="button"
             className="laam-add-btn"
-            onClick={(e) => {
-              e.preventDefault();
-              handleQuickAdd();
-            }}
+            onClick={handleQuickAdd}
+            disabled={!hasQuickAdd || adding}
             aria-label="Add to cart"
           >
             <FaShoppingBag size={16} />
