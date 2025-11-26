@@ -1836,3 +1836,21 @@ img {
   font-size: 11px;
   color: #6b7280;
 }
+.home-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.home-section-link {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #6b7280;
+}
+
+.home-section-link:hover {
+  color: #111827;
+}

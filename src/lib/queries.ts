@@ -375,3 +375,53 @@ export const HOME_HERO_BANNERS = /* GraphQL */ `
     }
   }
 `;
+/* ============================
+   HOME SECTION COLLECTION
+   - Used on homepage sections
+============================ */
+
+export const HOME_SECTION_COLLECTION = /* GraphQL */ `
+  query HomeSectionCollection($handle: String!, $count: Int!) {
+    collection(handle: $handle) {
+      id
+      title
+
+      products(first: $count) {
+        edges {
+          node {
+            id
+            handle
+            title
+            vendor
+
+            images(first: 2) {
+              edges {
+                node {
+                  url
+                  altText
+                }
+              }
+            }
+
+            variants(first: 1) {
+              edges {
+                node {
+                  id
+                  title
+                  price {
+                    amount
+                    currencyCode
+                  }
+                  compareAtPrice {
+                    amount
+                    currencyCode
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+`;

@@ -17,18 +17,20 @@ export default function HomePage() {
         {/* Hero slider (Shopify + fallback) */}
         <HomeHeroSection />
 
-        {/* Product sections */}
+        {/* Product sections – controlled via Shopify collections */}
         <HomeProductsSection
           sectionTitle="Trending Now"
-          queryType="trending"
+          collectionHandle="home-trending-now"
         />
+
         <HomeProductsSection
           sectionTitle="New Arrivals"
-          queryType="new"
+          collectionHandle="home-new-arrivals"
         />
+
         <HomeProductsSection
           sectionTitle="Best Sellers"
-          queryType="best"
+          collectionHandle="home-best-sellers"
         />
       </main>
     </div>

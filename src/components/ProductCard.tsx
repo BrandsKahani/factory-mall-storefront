@@ -137,21 +137,44 @@ export default function ProductCard({
         )}
 
         {/* TOP BADGES + WISHLIST */}
-        <div className="laam-card-top absolute top-2 left-2 right-2 flex items-start justify-between">
+        <div className="absolute top-2 left-2 right-2 flex items-start justify-between z-30">
           <div className="flex flex-col gap-1">
+            {/* Discount Badge (responsive size) */}
             {discount && (
-              <span className="laam-discount-badge inline-flex items-center rounded-full bg-red-500 text-white text-[11px] font-semibold px-2 py-0.5 shadow-sm">
+              <span
+                className="
+                  inline-flex rounded-full bg-red-500 text-white
+                  text-[9px] px-1.5 py-0.5
+                  sm:text-[10px] sm:px-2 sm:py-0.5
+                  font-semibold shadow
+                "
+              >
                 -{discount}% OFF
               </span>
             )}
-            <span className="inline-flex items-center rounded-full bg-white/80 backdrop-blur text-[11px] text-gray-700 px-2 py-0.5">
+
+            {/* Express Badge (responsive size) */}
+            <span
+              className="
+                inline-flex rounded-full bg-white/85 backdrop-blur text-gray-700
+                text-[9px] px-1.5 py-0.5
+                sm:text-[10px] sm:px-2 sm:py-0.5
+                shadow
+              "
+            >
               ⚡ Express
             </span>
           </div>
 
+          {/* Wishlist Button */}
           <button
             type="button"
-            className="laam-heart inline-flex items-center justify-center w-8 h-8 rounded-full bg-white/90 backdrop-blur shadow-sm hover:scale-105 transition-transform"
+            className="
+              inline-flex items-center justify-center
+              w-7 h-7 sm:w-8 sm:h-8
+              rounded-full bg-white/90 backdrop-blur
+              shadow-sm hover:scale-105 transition-transform
+            "
             onClick={handleWishlistClick}
             aria-label="Add to wishlist"
           >
@@ -190,7 +213,14 @@ export default function ProductCard({
 
           <button
             type="button"
-            className="laam-add-btn inline-flex items-center justify-center w-9 h-9 rounded-full border border-gray-200 bg-gray-900 text-white hover:bg-black disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            className="
+              laam-add-btn inline-flex items-center justify-center
+              w-9 h-9 rounded-full
+              border border-gray-200 bg-gray-900 text-black
+              hover:bg-White
+              disabled:opacity-40 disabled:cursor-not-allowed
+              transition-colors
+            "
             onClick={handleQuickAdd}
             disabled={!hasQuickAdd || adding}
             aria-label="Add to cart"
