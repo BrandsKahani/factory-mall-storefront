@@ -1,11 +1,22 @@
 // src/components/home/HomeHeroSection.tsx
+
 import { shopifyFetch } from "@/lib/shopify";
 import { HOME_HERO_BANNERS } from "@/lib/queries";
 import HomeHero, { type HeroBanner } from "./HomeHero";
 
+// ------------------ TYPES ------------------
+
+type MediaImageRef = {
+  image: {
+    url: string;
+    altText?: string | null;
+  };
+};
+
 type MetaobjectField = {
   key: string;
   value: string | null;
+  reference?: MediaImageRef | null;
 };
 
 type MetaobjectNode = {
@@ -21,64 +32,61 @@ type ShopifyResponse = {
   };
 };
 
+// ------------------ COMPONENT ------------------
+
 export default async function HomeHeroSection() {
   try {
-    const data = await shopifyFetch<ShopifyResponse>(
+    // Fetch from Shopify with proper type
+    const res = await shopifyFetch<ShopifyResponse>(
       HOME_HERO_BANNERS,
       {},
       60
     );
 
-    const edges = data?.data?.metaobjects?.edges ?? [];
+    const edges = res?.data?.metaobjects?.edges || [];
 
-    const banners: HeroBanner[] =
-      edges
-        .map(({ node }) => {
-          const fields = node.fields ?? [];
+    // Transform Shopify → HeroBanner
+    const banners: HeroBanner[] = edges
+      .map(({ node }) => {
+        let img = "";
+        let mobile = "";
+        let alt = "";
+        let link = "";
 
-          let desktop = "";
-          let mobile = "";
-          let alt = "";
-          let link = "";
-
-          for (const f of fields) {
-            if (f.key === "desktop_image") desktop = f.value ?? "";
-            if (f.key === "mobile_image") mobile = f.value ?? "";
-            if (f.key === "alt") alt = f.value ?? "";
-            if (f.key === "link") link = f.value ?? "";
+        for (const f of node.fields) {
+          if (f.key === "desktop_image") {
+            img = f?.reference?.image?.url || f.value || "";
+            alt = f?.reference?.image?.altText || alt;
           }
 
-          if (!desktop) return null;
+          if (f.key === "mobile_image") {
+            mobile = f?.reference?.image?.url || f.value || "";
+          }
 
-          const banner: HeroBanner = {
-            id: node.id,
-            imageUrl: desktop,
-            mobileImageUrl: mobile || null,
-            alt: alt || null,
-            linkUrl: link || null,
-          };
+          if (f.key === "link_url") {
+            link = f.value || "";
+          }
 
-          return banner;
-        })
-        .filter(Boolean) as HeroBanner[];
+          if (f.key === "display_name") {
+            alt = f.value || alt; // display_name used as ALT text fallback
+          }
+        }
 
-    // Agar Shopify se kuch na mile to fallback
-    if (!banners.length) {
-      const fallback: HeroBanner[] = [
-        {
-          id: "fallback-1",
-          imageUrl: "/banners/banner1.webp",
-          mobileImageUrl: "/banners/banner1-mobile.webp",
-          alt: "Factory Mall Hero",
-          linkUrl: "/collections/women-clothing",
-        },
-      ];
-      return <HomeHero banners={fallback} />;
-    }
+        if (!img) return null;
+
+        return {
+          id: node.id,
+          imageUrl: img,
+          mobileImageUrl: mobile || null,
+          alt: alt || "Banner",
+          linkUrl: link || "#",
+        };
+      })
+      .filter(Boolean) as HeroBanner[];
 
     return <HomeHero banners={banners} />;
-  } catch (err) {
-    console.error("HomeHeroSection error", err);
+  } catch (error) {
+    console.error("HomeHeroSection error:", error);
     return null;
   }
 }
