@@ -1,25 +1,35 @@
-import Sidebar from "@/components/SidebarNav";
-import HomeHero from "@/components/home/HomeHero";
+// src/app/page.tsx
+
+import HomeHeroSection from "@/components/home/HomeHeroSection";
 import HomeProductsSection from "@/components/home/HomeProductsSection";
 import SidebarNav from "@/components/SidebarNav";
-
-<aside className="sidebar-nav">
-  <SidebarNav />
-</aside>
 
 export default function HomePage() {
   return (
     <div className="app-shell">
+      {/* LEFT: Sidebar */}
       <aside className="sidebar-nav">
-        <Sidebar />
+        <SidebarNav />
       </aside>
 
+      {/* RIGHT: Main content */}
       <main className="app-main home-main">
-        <HomeHero />
+        {/* Hero slider (Shopify + fallback) */}
+        <HomeHeroSection />
 
-        <HomeProductsSection sectionTitle="Trending Now" queryType="trending" />
-        <HomeProductsSection sectionTitle="New Arrivals" queryType="new" />
-        <HomeProductsSection sectionTitle="Best Sellers" queryType="best" />
+        {/* Product sections */}
+        <HomeProductsSection
+          sectionTitle="Trending Now"
+          queryType="trending"
+        />
+        <HomeProductsSection
+          sectionTitle="New Arrivals"
+          queryType="new"
+        />
+        <HomeProductsSection
+          sectionTitle="Best Sellers"
+          queryType="best"
+        />
       </main>
     </div>
   );

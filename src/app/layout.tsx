@@ -1,9 +1,9 @@
-// src/app/layout.tsx
 import "./globals.css";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 
 import { CartProvider } from "@/context/CartContext";
+import { WishlistProvider } from "@/context/WishlistContext";
 import Header from "@/components/Header";
 import CartDrawer from "@/components/CartDrawer";
 
@@ -23,16 +23,16 @@ export default function RootLayout({
     <html lang="en">
       <body className={inter.className}>
         <CartProvider>
-          
-          {/* GLOBAL HEADER */}
-          <Header />
+          <WishlistProvider>
+            {/* GLOBAL HEADER */}
+            <Header />
 
-          {/* CART DRAWER ALWAYS IN ROOT */}
-          <CartDrawer />
+            {/* CART DRAWER */}
+            <CartDrawer />
 
-          {/* MAIN APP CONTENT */}
-          <main className="min-h-screen">{children}</main>
-
+            {/* MAIN APP CONTENT */}
+            <main className="min-h-screen">{children}</main>
+          </WishlistProvider>
         </CartProvider>
       </body>
     </html>

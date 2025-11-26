@@ -1,4 +1,3 @@
-// src/app/products/[handle]/page.tsx
 import { notFound } from "next/navigation";
 import Sidebar from "@/components/SidebarNav";
 import ProductDetailClient, {
@@ -6,6 +5,7 @@ import ProductDetailClient, {
   PDPVariant,
   ProductForPDP,
 } from "@/components/ProductDetailClient";
+import RecentlyViewedClient from "@/components/RecentlyViewedClient";
 import { shopifyFetch } from "@/lib/shopify";
 import { PRODUCT_BY_HANDLE } from "@/lib/queries";
 
@@ -16,11 +16,9 @@ type PageProps = {
 export default async function ProductPage({ params }: PageProps) {
   const { handle } = params;
 
-  const data = await shopifyFetch<any>(PRODUCT_BY_HANDLE, {
-    handle,
-  });
-
+  const data = await shopifyFetch<any>(PRODUCT_BY_HANDLE, { handle });
   const product = data?.data?.product;
+
   if (!product) {
     notFound();
   }
@@ -36,7 +34,7 @@ export default async function ProductPage({ params }: PageProps) {
       };
     }) ?? [];
 
-  // variants map (safe)
+  // variants map
   const variants: PDPVariant[] =
     product.variants?.edges?.map((e: any) => {
       const v = e.node;
@@ -53,6 +51,16 @@ export default async function ProductPage({ params }: PageProps) {
       };
     }) ?? [];
 
+  // collection breadcrumb
+  let collection: ProductForPDP["collection"] = null;
+  const colEdge = product.collections?.edges?.[0];
+  if (colEdge?.node) {
+    collection = {
+      handle: colEdge.node.handle,
+      title: colEdge.node.title,
+    };
+  }
+
   const productForClient: ProductForPDP = {
     id: product.id,
     handle: product.handle,
@@ -61,19 +69,30 @@ export default async function ProductPage({ params }: PageProps) {
     descriptionHtml: product.descriptionHtml,
     images,
     variants,
-    collection: null, // agar baad me collection query add karni ho to yahan bharo
+    collection,
   };
+
+  const firstVariant = variants[0];
 
   return (
     <div className="app-shell">
-      {/* LEFT: sidebar (same as home) */}
       <aside className="sidebar-nav">
         <Sidebar />
       </aside>
 
-      {/* RIGHT: PDP */}
       <main className="app-main">
         <ProductDetailClient product={productForClient} />
+
+        {firstVariant && images[0] && (
+          <RecentlyViewedClient
+            current={{
+              handle: product.handle,
+              title: product.title,
+              imageUrl: images[0].url,
+              price: firstVariant.price,
+            }}
+          />
+        )}
       </main>
     </div>
   );

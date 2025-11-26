@@ -35,9 +35,9 @@ export default function PdpPurchasePanel({
 }: Props) {
   const { addItem } = useCart();
 
-  const [selectedVariantId, setSelectedVariantId] = React.useState<
-    string | null
-  >(variants[0]?.id ?? null);
+  const [selectedVariantId, setSelectedVariantId] = React.useState<string | null>(
+    variants[0]?.id ?? null
+  );
   const [qty, setQty] = React.useState(1);
   const [loading, setLoading] = React.useState(false);
   const [sizeChartOpen, setSizeChartOpen] = React.useState(false);
@@ -52,8 +52,10 @@ export default function PdpPurchasePanel({
     !selectedVariant.availableForSale ||
     (selectedVariant.quantityAvailable ?? 0) <= 0;
 
-  const effectivePrice = price;
-  const effectiveCompareAt = compareAtPrice ?? null;
+  // agar variant me price/compareAtPrice hai to use karo, warna parent se
+  const effectivePrice = selectedVariant?.price ?? price;
+  const effectiveCompareAt =
+    selectedVariant?.compareAtPrice ?? compareAtPrice ?? null;
 
   const discount =
     effectiveCompareAt && effectiveCompareAt > effectivePrice
@@ -159,7 +161,23 @@ export default function PdpPurchasePanel({
           )}
         </div>
 
-        {/* LOW STOCK */}
+        {/* STOCK LINE (fixed) */}
+        {selectedVariant &&
+          selectedVariant.quantityAvailable != null &&
+          selectedVariant.quantityAvailable > 0 && (
+            <div
+              className="pdp-stock-line"
+              style={{ fontSize: "0.8rem", color: "#4b5563", marginBottom: 6 }}
+            >
+              <span style={{ fontWeight: 500 }}>Stock:</span>{" "}
+              <span>
+                {selectedVariant.quantityAvailable}{" "}
+                {selectedVariant.quantityAvailable === 1 ? "pc" : "pcs"}
+              </span>
+            </div>
+          )}
+
+        {/* LOW STOCK MESSAGE */}
         {showLowStockLine && (
           <div className="pdp-low-stock">
             Only a few pieces left — order soon!

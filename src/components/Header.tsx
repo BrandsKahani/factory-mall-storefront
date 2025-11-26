@@ -1,4 +1,3 @@
-// src/components/Header.tsx
 "use client";
 
 import Link from "next/link";
@@ -14,12 +13,12 @@ import {
   FiShoppingBag,
   FiChevronDown,
 } from "react-icons/fi";
-import { useCart } from "@/context/CartContext";
 
-type NavItem = {
-  label: string;
-  href: string;
-};
+import { useCart } from "@/context/CartContext";
+import { useWishlist } from "@/context/WishlistContext";
+import MobileMegaMenu from "@/components/MobileMenu";
+
+type NavItem = { label: string; href: string };
 
 const COLLECTIONS: NavItem[] = [
   { label: "Women Clothing", href: "/collections/women-clothing" },
@@ -32,7 +31,7 @@ const BRANDS: NavItem[] = [
   { label: "MTJ Fragrances", href: "/brands/mtj-fragrances" },
 ];
 
-/** Desktop dropdown item */
+/* Desktop Dropdown Item */
 function HeaderNavItem({
   label,
   items,
@@ -66,9 +65,7 @@ function HeaderNavItem({
       </button>
 
       <div
-        className={
-          "header-dropdown" + (open ? " header-dropdown--open" : "")
-        }
+        className={"header-dropdown" + (open ? " header-dropdown--open" : "")}
       >
         {items.map((item) => (
           <Link key={item.href} href={item.href} className="dropdown-item">
@@ -81,247 +78,161 @@ function HeaderNavItem({
 }
 
 export default function Header() {
-  const { count, toggleDrawer } = useCart();
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const [searchOpen, setSearchOpen] = useState(false);
+  const { count: cartCount, toggleDrawer } = useCart();
+  const { count: wishlistCount } = useWishlist();
   const pathname = usePathname();
+
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
 
   const isActivePrefix = (prefix: string) =>
     pathname === prefix || pathname?.startsWith(prefix + "/");
 
-  // body scroll lock for mobile menu
+  // Prevent body scroll when menu or search is open
   useEffect(() => {
-    if (mobileOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, [mobileOpen]);
+    const lock = mobileMenuOpen || searchOpen;
+    document.body.style.overflow = lock ? "hidden" : "";
+  }, [mobileMenuOpen, searchOpen]);
 
   return (
-    <div className="sticky-header">
-      {/* Top black strip */}
-      <div className="header-topbar">
-        <div className="header-topbar-inner">
-          Mega Sale • Upto 50% Off • Free Delivery Nationwide
-        </div>
-      </div>
-
-      {/* Main header */}
-      <header className="header-main">
-        <div className="header-main-inner">
-          {/* LEFT: mobile burger + logo */}
-          <div className="flex items-center gap-3">
-            <button
-              type="button"
-              className="header-mobile-toggle"
-              onClick={() => setMobileOpen(true)}
-              aria-label="Open menu"
-            >
-              <FiMenu size={20} />
-            </button>
-
-            <Link href="/">
-              <Image
-                src="/factorymall-logo.png"
-                alt="Factory Mall"
-                width={150}
-                height={40}
-                className="header-logo-img"
-              />
-            </Link>
-          </div>
-
-          {/* CENTER: desktop nav */}
-          <nav className="header-nav-desktop">
-            <Link
-              href="/"
-              className={
-                "header-nav-link" +
-                (pathname === "/" ? " header-nav-link--active" : "")
-              }
-            >
-              Home
-            </Link>
-
-            <HeaderNavItem
-              label="Collections"
-              items={COLLECTIONS}
-              active={isActivePrefix("/collections")}
-            />
-
-            <HeaderNavItem
-              label="Brands"
-              items={[{ label: "Brand Page", href: "/brands" }, ...BRANDS]}
-              active={isActivePrefix("/brands")}
-            />
-          </nav>
-
-          {/* RIGHT: icons + cart */}
-          <div className="header-right">
-            <button
-              type="button"
-              className="header-icon-btn"
-              onClick={() => setSearchOpen(true)}
-              aria-label="Search"
-            >
-              <FiSearch size={18} />
-            </button>
-
-            <button
-              type="button"
-              className="header-icon-btn"
-              aria-label="Wishlist"
-            >
-              <FiHeart size={18} />
-            </button>
-
-            <button
-              type="button"
-              className="header-icon-btn"
-              aria-label="Account"
-            >
-              <FiUser size={18} />
-            </button>
-
-            <button
-              type="button"
-              className="header-cart-btn"
-              onClick={toggleDrawer}
-            >
-              <FiShoppingBag size={16} />
-              <span>Cart</span>
-              {count > 0 && (
-                <span className="header-cart-badge">{count}</span>
-              )}
-            </button>
+    <>
+      <div className="sticky-header">
+        {/* TOP BAR */}
+        <div className="header-topbar">
+          <div className="header-topbar-inner">
+            Mega Sale • Upto 25% Off • Delivery Nationwide
           </div>
         </div>
 
-        {/* MOBILE MENU DRAWER */}
-        <div
-          className={
-            "mobile-menu-overlay" +
-            (mobileOpen ? " mobile-menu-overlay--open" : "")
-          }
-          onClick={() => setMobileOpen(false)}
-          aria-hidden={!mobileOpen}
-        >
-          <nav
-            className={
-              "mobile-menu" + (mobileOpen ? " mobile-menu--open" : "")
-            }
-            onClick={(e) => e.stopPropagation()}
-            aria-label="Mobile navigation"
-          >
-            <div className="mobile-menu-header">
-              <span className="mobile-menu-title">Menu</span>
+        {/* MAIN HEADER */}
+        <header className="header-main">
+          <div className="header-main-inner">
+            {/* LEFT SIDE */}
+            <div className="flex items-center gap-3">
+              {/* Mobile Menu Button */}
               <button
                 type="button"
-                className="header-icon-btn"
-                onClick={() => setMobileOpen(false)}
-                aria-label="Close menu"
+                className="header-mobile-toggle"
+                onClick={() => setMobileMenuOpen(true)}
               >
-                <FiX size={20} />
+                <FiMenu size={20} />
               </button>
+
+              {/* Logo */}
+              <Link href="/">
+                <Image
+                  src="/factorymall-logo.png"
+                  alt="Factory Mall"
+                  width={150}
+                  height={40}
+                  className="header-logo-img"
+                />
+              </Link>
             </div>
 
-            <div className="mobile-menu-list">
+            {/* NAV — Desktop Only */}
+            <nav className="header-nav-desktop">
               <Link
                 href="/"
-                className="mobile-item"
-                onClick={() => setMobileOpen(false)}
+                className={
+                  "header-nav-link" +
+                  (pathname === "/" ? " header-nav-link--active" : "")
+                }
               >
                 Home
               </Link>
 
-              <span className="mobile-section-title">Collections</span>
-              <Link
-                href="/collections/women-clothing"
-                className="mobile-item"
-                onClick={() => setMobileOpen(false)}
+              <HeaderNavItem
+                label="Collections"
+                items={COLLECTIONS}
+                active={isActivePrefix("/collections")}
+              />
+
+              <HeaderNavItem
+                label="Brands"
+                items={[{ label: "Brand Page", href: "/brands" }, ...BRANDS]}
+                active={isActivePrefix("/brands")}
+              />
+            </nav>
+
+            {/* RIGHT ICONS */}
+            <div className="header-right">
+              {/* Search */}
+              <button
+                type="button"
+                className="header-icon-btn"
+                onClick={() => setSearchOpen(true)}
               >
-                Women Clothing
-              </Link>
-              <Link
-                href="/collections/scents"
-                className="mobile-item"
-                onClick={() => setMobileOpen(false)}
-              >
-                Scents
-              </Link>
-              <Link
-                href="/collections/ready-to-wear"
-                className="mobile-item"
-                onClick={() => setMobileOpen(false)}
-              >
-                Ready to Wear
+                <FiSearch size={18} />
+              </button>
+
+              {/* Wishlist */}
+              <Link href="/wishlist" className="header-icon-btn relative">
+                <FiHeart size={18} />
+                {wishlistCount > 0 && (
+                  <span className="header-cart-badge">{wishlistCount}</span>
+                )}
               </Link>
 
-              <span className="mobile-section-title">Brands</span>
-              <Link
-                href="/brands"
-                className="mobile-item"
-                onClick={() => setMobileOpen(false)}
-              >
-                Brand Page
+              {/* Account / Login */}
+              <Link href="/account/login" className="header-icon-btn">
+                <FiUser size={18} />
               </Link>
-              <Link
-                href="/brands/looms"
-                className="mobile-item"
-                onClick={() => setMobileOpen(false)}
-              >
-                Looms
-              </Link>
-              <Link
-                href="/brands/mtj-fragrances"
-                className="mobile-item"
-                onClick={() => setMobileOpen(false)}
-              >
-                MTJ Fragrances
-              </Link>
-            </div>
-          </nav>
-        </div>
 
-        {/* SEARCH MODAL */}
-        {searchOpen && (
-          <div
-            className="search-overlay"
-            onClick={() => setSearchOpen(false)}
-          >
-            <div
-              className="search-modal"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="search-header">
-                <h2>Search products</h2>
-                <button
-                  type="button"
-                  className="header-icon-btn"
-                  onClick={() => setSearchOpen(false)}
-                >
-                  <FiX size={18} />
-                </button>
-              </div>
-
-              <div className="search-body">
-                <input
-                  type="text"
-                  className="search-input"
-                  placeholder="Search fashion, brands & more"
-                />
-                <p className="search-hint">
-                  Example: &quot;Looms lawn&quot; or &quot;Scents&quot;
-                </p>
-              </div>
+              {/* Cart */}
+              <button
+                type="button"
+                className="header-cart-btn"
+                onClick={toggleDrawer}
+              >
+                <FiShoppingBag size={16} />
+                <span className="hidden sm:inline">Cart</span>
+                {cartCount > 0 && (
+                  <span className="header-cart-badge">{cartCount}</span>
+                )}
+              </button>
             </div>
           </div>
-        )}
-      </header>
-    </div>
+
+          {/* SEARCH OVERLAY */}
+          {searchOpen && (
+            <div className="search-overlay" onClick={() => setSearchOpen(false)}>
+              <div
+                className="search-modal"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="search-header">
+                  <h2 className="text-sm font-medium">Search Products</h2>
+                  <button
+                    type="button"
+                    className="header-icon-btn"
+                    onClick={() => setSearchOpen(false)}
+                  >
+                    <FiX size={18} />
+                  </button>
+                </div>
+
+                <div className="search-body">
+                  <input
+                    type="text"
+                    className="search-input"
+                    placeholder="Search brands, products..."
+                  />
+                  <p className="search-hint">
+                    Example: “Looms”, “Fragrance”, “Women”
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+        </header>
+      </div>
+
+      {/* MOBILE MENU */}
+      <MobileMegaMenu
+        open={mobileMenuOpen}
+        onClose={() => setMobileMenuOpen(false)}
+      />
+    </>
   );
 }

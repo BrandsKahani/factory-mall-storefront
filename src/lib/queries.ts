@@ -347,3 +347,31 @@ export const COLLECTION_SLIDER_BY_KEY = /* GraphQL */ `
     }
   }
 `;
+/* ============================
+   HOME HERO BANNERS (Metaobjects)
+   type: "home_banner"
+============================ */
+
+export const HOME_HERO_BANNERS = /* GraphQL */ `
+  query HomeHeroBanners {
+    metaobjects(type: "home_banner", first: 10) {
+      edges {
+        node {
+          id
+          fields {
+            key
+            value
+            reference {
+              ... on MediaImage {
+                image {
+                  url
+                  altText
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+`;
