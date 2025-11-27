@@ -116,12 +116,13 @@ export default async function CollectionPage({ params }: PageProps) {
   };
 
   return (
-    <div className="app-shell">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-      />
+  <>
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+    />
 
+    <div className="app-shell">
       <Sidebar />
 
       <main className="app-main">
@@ -140,5 +141,6 @@ export default async function CollectionPage({ params }: PageProps) {
         </section>
       </main>
     </div>
-  );
+  </>
+);
 }
