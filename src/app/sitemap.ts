@@ -3,21 +3,45 @@ import { MetadataRoute } from "next";
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = "https://www.factorymall.pk";
 
-  // ---- Static Pages ----
-  const routes = ["", "/collections", "/brands", "/wishlist"].map((route) => ({
-    url: `${baseUrl}${route}`,
-    lastModified: new Date().toISOString(),
-  }));
+  // Fetch products from Shopify
+  const productsData = await fetch(
+    "https://YOUR_SHOPIFY_STORE.myshopify.com/api/2023-10/graphql.json",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Shopify-Storefront-Access-Token": "YOUR_ACCESS_TOKEN",
+      },
+      body: JSON.stringify({
+        query: `
+        {
+          products(first: 250) {
+            edges {
+              node {
+                handle
+                updatedAt
+              }
+            }
+          }
+        }
+        `,
+      }),
+    }
+  ).then((res) => res.json());
 
-  // ---- Example Dynamic Products (Replace with Shopify API) ----
-  // If you have Shopify products API setup, fetch actual handles here
-  // const products = await fetchProductsFromShopify();
-  const products: string[] = []; // keep empty for now
+  const productRoutes =
+    productsData?.data?.products?.edges?.map((edge: any) => ({
+      url: `${baseUrl}/products/${edge.node.handle}`,
+      lastModified: edge.node.updatedAt,
+    })) || [];
 
-  const productRoutes = products.map((handle) => ({
-    url: `${baseUrl}/products/${handle}`,
-    lastModified: new Date().toISOString(),
-  }));
+  // Static Pages
+  const staticRoutes = ["", "/collections", "/brands", "/wishlist"].map(
+    (route) => ({
+      url: `${baseUrl}${route}`,
+      lastModified: new Date().toISOString(),
+    })
+  );
 
-  return [...routes, ...productRoutes];
+  return [...staticRoutes, ...productRoutes];
 }
