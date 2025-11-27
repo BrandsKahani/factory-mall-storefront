@@ -76,20 +76,18 @@ export default async function BrandsPage() {
   };
 
   return (
-    <div className="app-shell">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-      />
+  <>
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+    />
 
-      {/* LEFT sidebar */}
+    <div className="app-shell">
       <aside className="sidebar-nav">
         <Sidebar />
       </aside>
 
-      {/* RIGHT content */}
       <main className="app-main">
-
         <section className="brands-hero">
           <h1 className="brands-title">Brands at Factory Mall</h1>
           <p className="brands-subtitle">
@@ -100,5 +98,6 @@ export default async function BrandsPage() {
         <BrandsGridClient initialBrands={brands} />
       </main>
     </div>
-  );
+  </>
+);
 }
