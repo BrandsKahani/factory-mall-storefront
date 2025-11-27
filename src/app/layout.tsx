@@ -12,9 +12,6 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "Factory Mall",
   description: "Fashion & Lifestyle Store",
-  verification: {
-    google: "i_GhVI6p3MNPakgRm_3nmyO_dbKqjFLkbeqPiX1DrSU", // ✅ Added GSC Verification
-  },
 };
 
 export default function RootLayout({
@@ -24,6 +21,13 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
+      <head>
+        <meta
+          name="google-site-verification"
+          content="i_GhVI6p3MNPakgRm_3nmyO_dbKqjFLkbeqPiX1DrSU"
+        />
+      </head>
+
       <body className={inter.className}>
         <CartProvider>
           <WishlistProvider>
