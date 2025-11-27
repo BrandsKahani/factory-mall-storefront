@@ -20,6 +20,10 @@ export const metadata: Metadata = {
   description:
     "Shop latest fashion, perfumes, accessories and lifestyle products at Factory Mall. Fast delivery all over Pakistan.",
 
+  verification: {
+    google: "i_GhVI6p3MNPakgRm_3nmyO_dbKqjFLkbeqPiX1DrSU", // ✔ Google Search Console FIXED
+  },
+
   openGraph: {
     title: "Factory Mall – Fashion & Lifestyle Store",
     description:
@@ -45,37 +49,21 @@ export const metadata: Metadata = {
       "Explore premium fashion, perfumes and lifestyle accessories at Factory Mall.",
     images: ["/og-image.png"],
   },
+
+  icons: {
+    icon: "/favicon.ico",
+    apple: "/apple-touch-icon.png",
+  },
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <head>
-        {/* Google Search Console Verification */}
-        <meta
-          name="google-site-verification"
-          content="i_GhVI6p3MNPakgRm_3nmyO_dbKqjFLkbeqPiX1DrSU"
-        />
-
-        {/* Favicon Support */}
-        <link rel="icon" href="/favicon.ico" />
-        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-
-        {/* Preconnect for speed */}
-        <link rel="preconnect" href="https://cdn.shopify.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
-      </head>
-
       <body className={inter.className}>
         <CartProvider>
           <WishlistProvider>
             <Header />
             <CartDrawer />
-
             <main className="min-h-screen">{children}</main>
           </WishlistProvider>
         </CartProvider>
