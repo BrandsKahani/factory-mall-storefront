@@ -425,3 +425,41 @@ export const HOME_SECTION_COLLECTION = /* GraphQL */ `
     }
   }
 `;
+export const SEARCH_PRODUCTS = /* GraphQL */ `
+  query SearchProducts($query: String!) {
+    products(first: 10, query: $query, sortKey: RELEVANCE) {
+      edges {
+        node {
+          id
+          handle
+          title
+          vendor
+          images(first: 1) {
+            edges {
+              node {
+                id
+                url
+                altText
+              }
+            }
+          }
+          variants(first: 1) {
+            edges {
+              node {
+                id
+                price {
+                  amount
+                  currencyCode
+                }
+                compareAtPrice {
+                  amount
+                  currencyCode
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+`;

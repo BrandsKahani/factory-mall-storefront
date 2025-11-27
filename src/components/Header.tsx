@@ -6,19 +6,20 @@ import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import {
   FiMenu,
-  FiX,
   FiSearch,
   FiUser,
   FiHeart,
   FiShoppingBag,
   FiChevronDown,
 } from "react-icons/fi";
-
 import { useCart } from "@/context/CartContext";
-import { useWishlist } from "@/context/WishlistContext";
 import MobileMegaMenu from "@/components/MobileMenu";
+import SearchModal from "@/components/SearchModal";
 
-type NavItem = { label: string; href: string };
+type NavItem = {
+  label: string;
+  href: string;
+};
 
 const COLLECTIONS: NavItem[] = [
   { label: "Women Clothing", href: "/collections/women-clothing" },
@@ -31,7 +32,7 @@ const BRANDS: NavItem[] = [
   { label: "MTJ Fragrances", href: "/brands/mtj-fragrances" },
 ];
 
-/* Desktop Dropdown Item */
+/** Desktop dropdown item */
 function HeaderNavItem({
   label,
   items,
@@ -65,7 +66,9 @@ function HeaderNavItem({
       </button>
 
       <div
-        className={"header-dropdown" + (open ? " header-dropdown--open" : "")}
+        className={
+          "header-dropdown" + (open ? " header-dropdown--open" : "")
+        }
       >
         {items.map((item) => (
           <Link key={item.href} href={item.href} className="dropdown-item">
@@ -78,8 +81,7 @@ function HeaderNavItem({
 }
 
 export default function Header() {
-  const { count: cartCount, toggleDrawer } = useCart();
-  const { count: wishlistCount } = useWishlist();
+  const { count, toggleDrawer } = useCart();
   const pathname = usePathname();
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -88,37 +90,43 @@ export default function Header() {
   const isActivePrefix = (prefix: string) =>
     pathname === prefix || pathname?.startsWith(prefix + "/");
 
-  // Prevent body scroll when menu or search is open
+  // body scroll lock for mobile menu + search
   useEffect(() => {
-    const lock = mobileMenuOpen || searchOpen;
-    document.body.style.overflow = lock ? "hidden" : "";
+    const shouldLock = mobileMenuOpen || searchOpen;
+    if (shouldLock) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
   }, [mobileMenuOpen, searchOpen]);
 
   return (
     <>
       <div className="sticky-header">
-        {/* TOP BAR */}
+        {/* Top black strip */}
         <div className="header-topbar">
           <div className="header-topbar-inner">
-            Mega Sale • Upto 25% Off • Delivery Nationwide
+            Mega Sale • Upto 50% Off • Free Delivery Nationwide
           </div>
         </div>
 
-        {/* MAIN HEADER */}
+        {/* Main header */}
         <header className="header-main">
           <div className="header-main-inner">
-            {/* LEFT SIDE */}
+            {/* LEFT: mobile burger + logo */}
             <div className="flex items-center gap-3">
-              {/* Mobile Menu Button */}
               <button
                 type="button"
                 className="header-mobile-toggle"
                 onClick={() => setMobileMenuOpen(true)}
+                aria-label="Open menu"
               >
                 <FiMenu size={20} />
               </button>
 
-              {/* Logo */}
               <Link href="/">
                 <Image
                   src="/factorymall-logo.png"
@@ -130,7 +138,7 @@ export default function Header() {
               </Link>
             </div>
 
-            {/* NAV — Desktop Only */}
+            {/* CENTER: desktop nav */}
             <nav className="header-nav-desktop">
               <Link
                 href="/"
@@ -155,84 +163,61 @@ export default function Header() {
               />
             </nav>
 
-            {/* RIGHT ICONS */}
+            {/* RIGHT: icons + cart  (Wishlist → Login → Search → Cart) */}
             <div className="header-right">
+              {/* Wishlist */}
+              <Link href="/wishlist" aria-label="Wishlist">
+                <button type="button" className="header-icon-btn">
+                  <FiHeart size={18} />
+                </button>
+              </Link>
+
+              {/* Account / Login */}
+              <button
+                type="button"
+                className="header-icon-btn"
+                aria-label="Account"
+                // TODO: link this to real login page later
+              >
+                <FiUser size={18} />
+              </button>
+
               {/* Search */}
               <button
                 type="button"
                 className="header-icon-btn"
                 onClick={() => setSearchOpen(true)}
+                aria-label="Search"
               >
                 <FiSearch size={18} />
               </button>
-
-              {/* Wishlist */}
-              <Link href="/wishlist" className="header-icon-btn relative">
-                <FiHeart size={18} />
-                {wishlistCount > 0 && (
-                  <span className="header-cart-badge">{wishlistCount}</span>
-                )}
-              </Link>
-
-              {/* Account / Login */}
-              <Link href="/account/login" className="header-icon-btn">
-                <FiUser size={18} />
-              </Link>
 
               {/* Cart */}
               <button
                 type="button"
                 className="header-cart-btn"
                 onClick={toggleDrawer}
+                aria-label="Open cart"
               >
                 <FiShoppingBag size={16} />
                 <span className="hidden sm:inline">Cart</span>
-                {cartCount > 0 && (
-                  <span className="header-cart-badge">{cartCount}</span>
+                {count > 0 && (
+                  <span className="header-cart-badge">{count}</span>
                 )}
               </button>
             </div>
           </div>
-
-          {/* SEARCH OVERLAY */}
-          {searchOpen && (
-            <div className="search-overlay" onClick={() => setSearchOpen(false)}>
-              <div
-                className="search-modal"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <div className="search-header">
-                  <h2 className="text-sm font-medium">Search Products</h2>
-                  <button
-                    type="button"
-                    className="header-icon-btn"
-                    onClick={() => setSearchOpen(false)}
-                  >
-                    <FiX size={18} />
-                  </button>
-                </div>
-
-                <div className="search-body">
-                  <input
-                    type="text"
-                    className="search-input"
-                    placeholder="Search brands, products..."
-                  />
-                  <p className="search-hint">
-                    Example: “Looms”, “Fragrance”, “Women”
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
         </header>
       </div>
 
-      {/* MOBILE MENU */}
+      {/* MOBILE MEGA MENU OVERLAY */}
       <MobileMegaMenu
         open={mobileMenuOpen}
         onClose={() => setMobileMenuOpen(false)}
       />
+
+      {/* SEARCH MODAL (autocomplete) */}
+      <SearchModal open={searchOpen} onClose={() => setSearchOpen(false)} />
     </>
   );
 }

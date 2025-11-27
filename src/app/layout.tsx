@@ -12,6 +12,9 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "Factory Mall",
   description: "Fashion & Lifestyle Store",
+  verification: {
+    google: "i_GhVI6p3MNPakgRm_3nmyO_dbKqjFLkbeqPiX1DrSU", // ✅ Added GSC Verification
+  },
 };
 
 export default function RootLayout({
@@ -24,13 +27,8 @@ export default function RootLayout({
       <body className={inter.className}>
         <CartProvider>
           <WishlistProvider>
-            {/* GLOBAL HEADER */}
             <Header />
-
-            {/* CART DRAWER */}
             <CartDrawer />
-
-            {/* MAIN APP CONTENT */}
             <main className="min-h-screen">{children}</main>
           </WishlistProvider>
         </CartProvider>

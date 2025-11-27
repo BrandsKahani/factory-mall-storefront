@@ -1,11 +1,12 @@
 "use client";
 
-import React, {
+import {
   createContext,
   useContext,
-  useEffect,
-  useMemo,
   useState,
+  useEffect,
+  useCallback,
+  ReactNode,
 } from "react";
 
 export type WishlistItem = {
@@ -18,11 +19,10 @@ export type WishlistItem = {
 
 type WishlistContextType = {
   items: WishlistItem[];
-  count: number;
   toggleWishlist: (item: WishlistItem) => void;
-  removeItem: (handle: string) => void;
-  clearWishlist: () => void;
   isInWishlist: (handle: string) => boolean;
+  removeFromWishlist: (handle: string) => void;
+  clearWishlist: () => void;
 };
 
 const WishlistContext = createContext<WishlistContextType | undefined>(
@@ -31,13 +31,12 @@ const WishlistContext = createContext<WishlistContextType | undefined>(
 
 const STORAGE_KEY = "fm_wishlist_v1";
 
-export function WishlistProvider({ children }: { children: React.ReactNode }) {
+export function WishlistProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<WishlistItem[]>([]);
 
-  // 🔹 Load from localStorage
+  // Load from localStorage
   useEffect(() => {
     if (typeof window === "undefined") return;
-
     try {
       const raw = window.localStorage.getItem(STORAGE_KEY);
       if (!raw) return;
@@ -45,55 +44,52 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
       if (Array.isArray(parsed)) {
         setItems(parsed);
       }
-    } catch (err) {
-      console.warn("Wishlist localStorage parse error", err);
+    } catch (e) {
+      console.warn("Wishlist parse error", e);
     }
   }, []);
 
-  // 🔹 Save to localStorage
+  // Save to localStorage
   useEffect(() => {
     if (typeof window === "undefined") return;
     try {
       window.localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
-    } catch (err) {
-      console.warn("Wishlist localStorage save error", err);
+    } catch (e) {
+      console.warn("Wishlist save error", e);
     }
   }, [items]);
 
-  const count = useMemo(() => items.length, [items]);
-
-  const isInWishlist = (handle: string) =>
-    items.some((it) => it.handle === handle);
+  const isInWishlist = useCallback(
+    (handle: string) => items.some((it) => it.handle === handle),
+    [items]
+  );
 
   const toggleWishlist = (item: WishlistItem) => {
     setItems((prev) => {
       const exists = prev.some((p) => p.handle === item.handle);
       if (exists) {
-        // remove
         return prev.filter((p) => p.handle !== item.handle);
       }
-      // add on top
       return [item, ...prev];
     });
   };
 
-  const removeItem = (handle: string) => {
-    setItems((prev) => prev.filter((it) => it.handle !== handle));
+  const removeFromWishlist = (handle: string) => {
+    setItems((prev) => prev.filter((p) => p.handle !== handle));
   };
 
   const clearWishlist = () => setItems([]);
 
-  const value: WishlistContextType = {
-    items,
-    count,
-    toggleWishlist,
-    removeItem,
-    clearWishlist,
-    isInWishlist,
-  };
-
   return (
-    <WishlistContext.Provider value={value}>
+    <WishlistContext.Provider
+      value={{
+        items,
+        toggleWishlist,
+        isInWishlist,
+        removeFromWishlist,
+        clearWishlist,
+      }}
+    >
       {children}
     </WishlistContext.Provider>
   );
@@ -102,7 +98,7 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
 export function useWishlist() {
   const ctx = useContext(WishlistContext);
   if (!ctx) {
-    throw new Error("useWishlist must be used within WishlistProvider");
+    throw new Error("useWishlist must be used inside WishlistProvider");
   }
   return ctx;
 }
