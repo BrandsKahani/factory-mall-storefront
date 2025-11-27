@@ -13,7 +13,6 @@ import { PRODUCT_BY_HANDLE } from "@/lib/queries";
 export async function generateMetadata({ params }: any) {
   const { handle } = params;
 
-  // Fetch product
   const data = await shopifyFetch<any>(PRODUCT_BY_HANDLE, { handle });
   const product = data?.data?.product;
 
@@ -105,6 +104,8 @@ export default async function ProductPage({ params }: PageProps) {
       };
     }) ?? [];
 
+  const firstVariant = variants[0];
+
   // collection info
   let collection: ProductForPDP["collection"] = null;
   const colEdge = product.collections?.edges?.[0];
@@ -126,36 +127,58 @@ export default async function ProductPage({ params }: PageProps) {
     collection,
   };
 
-  const firstVariant = variants[0];
-
-  // ⭐⭐⭐ JSON-LD WITH REVIEWS + RATINGS ⭐⭐⭐
+  // ⭐⭐⭐ ADVANCED JSON-LD SCHEMA (SAFE VERSION) ⭐⭐⭐
   const jsonLd = {
-    "@context": "https://schema.org/",
+    "@context": "https://schema.org",
     "@type": "Product",
+
     name: product.title,
-    image: images.map((img) => img.url),
-    description: product.description,
+
+    description: product.descriptionHtml?.replace(/<[^>]+>/g, "") || "",
+
+    image: images.map((i) => i.url),
+
+    sku: product.id,
+    mpn: product.id,
+
     brand: {
       "@type": "Brand",
       name: product.vendor,
     },
-    offers: {
-      "@type": "Offer",
-      priceCurrency: "PKR",
-      price: firstVariant?.price || "0",
-      availability: firstVariant?.availableForSale
-        ? "https://schema.org/InStock"
-        : "https://schema.org/OutOfStock",
-      url: `https://www.factorymall.pk/products/${product.handle}`,
+
+    // ⭐ Breadcrumb Schema
+    breadcrumb: {
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        {
+          "@type": "ListItem",
+          position: 1,
+          name: "Home",
+          item: "https://www.factorymall.pk",
+        },
+        {
+          "@type": "ListItem",
+          position: 2,
+          name: collection?.title || "Products",
+          item: `https://www.factorymall.pk/collections/${collection?.handle}`,
+        },
+        {
+          "@type": "ListItem",
+          position: 3,
+          name: product.title,
+          item: `https://www.factorymall.pk/products/${product.handle}`,
+        },
+      ],
     },
 
-    // ⭐ REVIEWS + RATINGS FOR RICH RESULTS ⭐
+    // ⭐ Rating Schema
     aggregateRating: {
       "@type": "AggregateRating",
       ratingValue: "4.8",
       reviewCount: "37",
     },
 
+    // ⭐ Review Schema
     review: [
       {
         "@type": "Review",
@@ -168,10 +191,21 @@ export default async function ProductPage({ params }: PageProps) {
           "@type": "Rating",
           ratingValue: "5",
           bestRating: "5",
-          worstRating: "1",
         },
       },
     ],
+
+    // ⭐ Offer Schema
+    offers: {
+      "@type": "Offer",
+      url: `https://www.factorymall.pk/products/${product.handle}`,
+      priceCurrency: "PKR",
+      price: firstVariant?.price || "0",
+      itemCondition: "https://schema.org/NewCondition",
+      availability: firstVariant?.availableForSale
+        ? "https://schema.org/InStock"
+        : "https://schema.org/OutOfStock",
+    },
   };
 
   return (
