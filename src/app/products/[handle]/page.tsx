@@ -24,17 +24,19 @@ export async function generateMetadata({ params }: any) {
   }
 
   const firstImage = product.images?.edges?.[0]?.node?.url;
+  const desc =
+    product.description ||
+    "Shop fashion, fragrances and lifestyle products at Factory Mall.";
 
   return {
     title: `${product.title} | Factory Mall`,
-    description:
-      product.description || "Fashion, fragrances and lifestyle products.",
+    description: desc,
     alternates: {
       canonical: `https://www.factorymall.pk/products/${handle}`,
     },
     openGraph: {
       title: product.title,
-      description: product.description,
+      description: desc,
       url: `https://www.factorymall.pk/products/${handle}`,
       siteName: "Factory Mall",
       images: firstImage
@@ -47,13 +49,13 @@ export async function generateMetadata({ params }: any) {
             },
           ]
         : [],
-      type: "product",
+      // ❌ YAHAN KOI `type:` NAHI HAI – isse error nahi aayega
     },
     twitter: {
       card: "summary_large_image",
       title: product.title,
-      description: product.description,
-      images: [firstImage],
+      description: desc,
+      images: firstImage ? [firstImage] : [],
     },
   };
 }
@@ -127,58 +129,26 @@ export default async function ProductPage({ params }: PageProps) {
     collection,
   };
 
-  // ⭐⭐⭐ ADVANCED JSON-LD SCHEMA (SAFE VERSION) ⭐⭐⭐
+  // ⭐⭐⭐ JSON-LD (Product + Review + Offer) ⭐⭐⭐
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Product",
-
     name: product.title,
-
-    description: product.descriptionHtml?.replace(/<[^>]+>/g, "") || "",
-
+    description:
+      product.descriptionHtml?.replace(/<[^>]+>/g, "") ||
+      "Shop fashion, fragrances and lifestyle products at Factory Mall.",
     image: images.map((i) => i.url),
-
     sku: product.id,
     mpn: product.id,
-
     brand: {
       "@type": "Brand",
       name: product.vendor,
     },
-
-    // ⭐ Breadcrumb Schema
-    breadcrumb: {
-      "@type": "BreadcrumbList",
-      itemListElement: [
-        {
-          "@type": "ListItem",
-          position: 1,
-          name: "Home",
-          item: "https://www.factorymall.pk",
-        },
-        {
-          "@type": "ListItem",
-          position: 2,
-          name: collection?.title || "Products",
-          item: `https://www.factorymall.pk/collections/${collection?.handle}`,
-        },
-        {
-          "@type": "ListItem",
-          position: 3,
-          name: product.title,
-          item: `https://www.factorymall.pk/products/${product.handle}`,
-        },
-      ],
-    },
-
-    // ⭐ Rating Schema
     aggregateRating: {
       "@type": "AggregateRating",
       ratingValue: "4.8",
       reviewCount: "37",
     },
-
-    // ⭐ Review Schema
     review: [
       {
         "@type": "Review",
@@ -194,8 +164,6 @@ export default async function ProductPage({ params }: PageProps) {
         },
       },
     ],
-
-    // ⭐ Offer Schema
     offers: {
       "@type": "Offer",
       url: `https://www.factorymall.pk/products/${product.handle}`,
@@ -210,7 +178,7 @@ export default async function ProductPage({ params }: PageProps) {
 
   return (
     <>
-      {/* ⭐ STRUCTURED DATA INJECTION ⭐ */}
+      {/* Structured data for Google */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}

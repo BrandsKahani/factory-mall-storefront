@@ -1,5 +1,3 @@
-// src/app/collections/[handle]/page.tsx
-
 import Sidebar from "@/components/SidebarNav";
 import ProductCard, { ProductCardProps } from "@/components/ProductCard";
 import { shopifyFetch } from "@/lib/shopify";
@@ -80,7 +78,7 @@ export default async function CollectionPage({ params }: PageProps) {
   }
 
   const products: ProductCardProps[] =
-    (c.products?.edges ?? []).map((e: any, index: number) => {
+    (c.products?.edges ?? []).map((e: any) => {
       const n = e.node;
 
       const firstImage = n.images?.edges?.[0]?.node ?? null;
@@ -102,26 +100,7 @@ export default async function CollectionPage({ params }: PageProps) {
       };
     }) ?? [];
 
-  // ⭐ JSON-LD ItemList Schema ⭐ (Improves Google indexing)
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "ItemList",
-    name: c.title,
-    description: c.description,
-    itemListElement: products.map((p, i) => ({
-      "@type": "ListItem",
-      position: i + 1,
-      url: `https://www.factorymall.pk/products/${p.handle}`,
-    })),
-  };
-
   return (
-  <>
-    <script
-      type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-    />
-
     <div className="app-shell">
       <Sidebar />
 
@@ -141,6 +120,5 @@ export default async function CollectionPage({ params }: PageProps) {
         </section>
       </main>
     </div>
-  </>
-);
+  );
 }
