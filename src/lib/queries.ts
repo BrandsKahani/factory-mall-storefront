@@ -463,3 +463,34 @@ export const SEARCH_PRODUCTS = /* GraphQL */ `
     }
   }
 `;
+// ⭐ COLLECTION MENU METAOBJECT QUERY
+export const COLLECTION_MENU_QUERY = `
+{
+  metaobjects(type: "collection_menu", first: 50) {
+    edges {
+      node {
+        id
+        fields {
+          key
+          value
+          reference {
+            ... on Collection {
+              handle
+              title
+              image {
+                url
+              }
+            }
+            ... on MediaImage {
+              image {
+                url
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+`;
+

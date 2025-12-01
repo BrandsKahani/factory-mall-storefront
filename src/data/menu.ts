@@ -12,7 +12,7 @@ export const MAIN_MENU = [
     label: "Scents",
     children: [
       { label: "Men’s Fragrances", href: "/collections/mens-scents" },
-      { label: "Women’s Perfumes", href: "/collections/womens-scents" },
+      { label: "Women’s Fragrances", href: "/collections/womens-scents" },
     ],
   },
   {

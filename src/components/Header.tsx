@@ -109,7 +109,7 @@ export default function Header() {
         {/* Top black strip */}
         <div className="header-topbar">
           <div className="header-topbar-inner">
-            Mega Sale • Upto 50% Off • Free Delivery Nationwide
+            Mega Sale • Upto 50% Off • Order Now
           </div>
         </div>
 
@@ -131,7 +131,7 @@ export default function Header() {
                 <Image
                   src="/factorymall-logo.png"
                   alt="Factory Mall"
-                  width={150}
+                  width={100}
                   height={40}
                   className="header-logo-img"
                 />

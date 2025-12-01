@@ -4,8 +4,10 @@ import { Inter } from "next/font/google";
 
 import { CartProvider } from "@/context/CartContext";
 import { WishlistProvider } from "@/context/WishlistContext";
+
 import Header from "@/components/Header";
 import CartDrawer from "@/components/CartDrawer";
+import StickyToolbar from "@/components/StickyToolbar"; // ✅ ADD THIS
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -21,7 +23,7 @@ export const metadata: Metadata = {
     "Shop latest fashion, perfumes, accessories and lifestyle products at Factory Mall. Fast delivery all over Pakistan.",
 
   verification: {
-    google: "i_GhVI6p3MNPakgRm_3nmyO_dbKqjFLkbeqPiX1DrSU", // ✔ Google Search Console FIXED
+    google: "i_GhVI6p3MNPakgRm_3nmyO_dbKqjFLkbeqPiX1DrSU",
   },
 
   openGraph: {
@@ -62,9 +64,17 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className={inter.className}>
         <CartProvider>
           <WishlistProvider>
+            {/* HEADER */}
             <Header />
+
+            {/* CART DRAWER */}
             <CartDrawer />
-            <main className="min-h-screen">{children}</main>
+
+            {/* MAIN CONTENT */}
+            <main className="min-h-screen pb-20">{children}</main>
+
+            {/* ✅ MOBILE STICKY TOOLBAR */}
+            <StickyToolbar />
           </WishlistProvider>
         </CartProvider>
       </body>

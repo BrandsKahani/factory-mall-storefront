@@ -49,7 +49,7 @@ export default function MobileMegaMenu({ open, onClose }: any) {
         {/* ========== TOP BAR ========== */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-gray-200 bg-gray-50">
           <Link href="/" className="flex items-center gap-2">
-            <Image src="/factorymall-logo.png" width={32} height={32} alt="Logo" />
+            <Image src="/factorymall-logo.png" width={80} height={32} alt="Logo" />
           </Link>
 
           <div className="flex items-center gap-2">
