@@ -9,15 +9,17 @@ import toast from "react-hot-toast";
 
 export default function WishlistGrid() {
   const { items, removeFromWishlist } = useWishlist();
-  const { addToCart } = useCart();
+  const { addItem } = useCart(); // ✅ FIXED
 
   const moveToCart = (item: any) => {
-    addToCart({
-      handle: item.handle,
+    // Add to cart using correct function
+    addItem({
+      id: item.variantId || item.handle, // fallback if variant missing
       title: item.title,
-      imageUrl: item.imageUrl,
       price: item.price,
       quantity: 1,
+      imageUrl: item.imageUrl,
+      variantTitle: item.variantTitle ?? null,
     });
 
     removeFromWishlist(item.handle);
