@@ -63,7 +63,7 @@ export default function StickyToolbar() {
         <span className="text-[11px] mt-1">Wishlist</span>
       </Link>
 
-      {/* CART — FIXED */}
+      {/* CART (FIXED VERSION) */}
       <button
         type="button"
         onClick={toggleDrawer}
