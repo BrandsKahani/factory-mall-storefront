@@ -1,3 +1,4 @@
+// src/app/layout.tsx
 import "./globals.css";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
@@ -31,7 +32,10 @@ export default function RootLayout({
             <WishlistProvider>
               <Header />
               <CartDrawer />
+
+              {/* ❌ Yahan koi Sidebar nahi */}
               <main className="min-h-screen pb-20">{children}</main>
+
               <StickyToolbar />
               <LoginPopup />
             </WishlistProvider>

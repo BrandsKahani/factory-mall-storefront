@@ -493,4 +493,71 @@ export const COLLECTION_MENU_QUERY = `
   }
 }
 `;
+// src/lib/queries.ts
+
+export const COLLECTION_BY_HANDLE_WITH_FILTERS = /* GraphQL */ `
+  query CollectionByHandleWithFilters(
+    $handle: String!
+    $filters: [ProductFilter!]
+    $first: Int = 24
+  ) {
+    collection(handle: $handle) {
+      id
+      handle
+      title
+      description
+
+      # ① FILTER DEFINITIONS (dynamic)
+      products(first: $first, filters: $filters) {
+        filters {
+          id
+          label
+          type
+          values {
+            id
+            label
+            input
+            count
+          }
+        }
+
+        # ② PRODUCTS
+        edges {
+          node {
+            id
+            handle
+            title
+            vendor
+
+            images(first: 2) {
+              edges {
+                node {
+                  id
+                  url
+                  altText
+                }
+              }
+            }
+
+            variants(first: 1) {
+              edges {
+                node {
+                  id
+                  price {
+                    amount
+                    currencyCode
+                  }
+                  compareAtPrice {
+                    amount
+                    currencyCode
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+`;
 
