@@ -12,7 +12,9 @@ import {
   FiShoppingBag,
   FiChevronDown,
 } from "react-icons/fi";
+
 import { useCart } from "@/context/CartContext";
+import { useLoginPopup } from "@/context/LoginPopupContext";
 import MobileMegaMenu from "@/components/MobileMenu";
 import SearchModal from "@/components/SearchModal";
 
@@ -32,7 +34,6 @@ const BRANDS: NavItem[] = [
   { label: "MTJ Fragrances", href: "/brands/mtj-fragrances" },
 ];
 
-/** Desktop dropdown item */
 function HeaderNavItem({
   label,
   items,
@@ -82,6 +83,7 @@ function HeaderNavItem({
 
 export default function Header() {
   const { count, toggleDrawer } = useCart();
+  const { openLogin } = useLoginPopup();
   const pathname = usePathname();
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -90,14 +92,9 @@ export default function Header() {
   const isActivePrefix = (prefix: string) =>
     pathname === prefix || pathname?.startsWith(prefix + "/");
 
-  // body scroll lock for mobile menu + search
   useEffect(() => {
-    const shouldLock = mobileMenuOpen || searchOpen;
-    if (shouldLock) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
+    const lock = mobileMenuOpen || searchOpen;
+    document.body.style.overflow = lock ? "hidden" : "";
     return () => {
       document.body.style.overflow = "";
     };
@@ -106,7 +103,7 @@ export default function Header() {
   return (
     <>
       <div className="sticky-header">
-        {/* Top black strip */}
+        {/* Top bar */}
         <div className="header-topbar">
           <div className="header-topbar-inner">
             Mega Sale • Upto 50% Off • Order Now
@@ -116,7 +113,7 @@ export default function Header() {
         {/* Main header */}
         <header className="header-main">
           <div className="header-main-inner">
-            {/* LEFT: mobile burger + logo */}
+            {/* LEFT: burger + logo */}
             <div className="flex items-center gap-3">
               <button
                 type="button"
@@ -138,7 +135,7 @@ export default function Header() {
               </Link>
             </div>
 
-            {/* CENTER: desktop nav */}
+            {/* CENTER NAV (desktop) */}
             <nav className="header-nav-desktop">
               <Link
                 href="/"
@@ -163,7 +160,7 @@ export default function Header() {
               />
             </nav>
 
-            {/* RIGHT: icons + cart  (Wishlist → Login → Search → Cart) */}
+            {/* RIGHT ICONS */}
             <div className="header-right">
               {/* Wishlist */}
               <Link href="/wishlist" aria-label="Wishlist">
@@ -172,12 +169,12 @@ export default function Header() {
                 </button>
               </Link>
 
-              {/* Account / Login */}
+              {/* Account → open login popup */}
               <button
                 type="button"
                 className="header-icon-btn"
                 aria-label="Account"
-                // TODO: link this to real login page later
+                onClick={openLogin}
               >
                 <FiUser size={18} />
               </button>
@@ -210,13 +207,11 @@ export default function Header() {
         </header>
       </div>
 
-      {/* MOBILE MEGA MENU OVERLAY */}
+      {/* Mobile menu + search modal */}
       <MobileMegaMenu
         open={mobileMenuOpen}
         onClose={() => setMobileMenuOpen(false)}
       />
-
-      {/* SEARCH MODAL (autocomplete) */}
       <SearchModal open={searchOpen} onClose={() => setSearchOpen(false)} />
     </>
   );

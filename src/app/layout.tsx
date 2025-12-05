@@ -4,79 +4,39 @@ import { Inter } from "next/font/google";
 
 import { CartProvider } from "@/context/CartContext";
 import { WishlistProvider } from "@/context/WishlistContext";
+import { LoginPopupProvider } from "@/context/LoginPopupContext";
 
 import Header from "@/components/Header";
 import CartDrawer from "@/components/CartDrawer";
-import StickyToolbar from "@/components/StickyToolbar"; // ✅ ADD THIS
+import StickyToolbar from "@/components/StickyToolbar";
+import LoginPopup from "@/components/LoginPopup";
 
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://www.factorymall.pk"),
-
-  title: {
-    default: "Factory Mall – Fashion & Lifestyle Store",
-    template: "%s | Factory Mall",
-  },
-
-  description:
-    "Shop latest fashion, perfumes, accessories and lifestyle products at Factory Mall. Fast delivery all over Pakistan.",
-
-  verification: {
-    google: "i_GhVI6p3MNPakgRm_3nmyO_dbKqjFLkbeqPiX1DrSU",
-  },
-
-  openGraph: {
-    title: "Factory Mall – Fashion & Lifestyle Store",
-    description:
-      "Trending fashion, perfumes, and accessories at unbeatable prices.",
-    url: "https://www.factorymall.pk",
-    siteName: "Factory Mall",
-    images: [
-      {
-        url: "/og-image.png",
-        width: 1200,
-        height: 630,
-        alt: "Factory Mall",
-      },
-    ],
-    locale: "en_US",
-    type: "website",
-  },
-
-  twitter: {
-    card: "summary_large_image",
-    title: "Factory Mall – Fashion & Lifestyle Store",
-    description:
-      "Explore premium fashion, perfumes and lifestyle accessories at Factory Mall.",
-    images: ["/og-image.png"],
-  },
-
-  icons: {
-    icon: "/favicon.ico",
-    apple: "/apple-touch-icon.png",
-  },
+  title: "Factory Mall – Fashion & Lifestyle Store",
+  description: "Shop latest fashion products.",
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html lang="en">
       <body className={inter.className}>
-        <CartProvider>
-          <WishlistProvider>
-            {/* HEADER */}
-            <Header />
-
-            {/* CART DRAWER */}
-            <CartDrawer />
-
-            {/* MAIN CONTENT */}
-            <main className="min-h-screen pb-20">{children}</main>
-
-            {/* ✅ MOBILE STICKY TOOLBAR */}
-            <StickyToolbar />
-          </WishlistProvider>
-        </CartProvider>
+        <LoginPopupProvider>
+          <CartProvider>
+            <WishlistProvider>
+              <Header />
+              <CartDrawer />
+              <main className="min-h-screen pb-20">{children}</main>
+              <StickyToolbar />
+              <LoginPopup />
+            </WishlistProvider>
+          </CartProvider>
+        </LoginPopupProvider>
       </body>
     </html>
   );
