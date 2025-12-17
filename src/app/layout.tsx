@@ -2,6 +2,7 @@
 import "./globals.css";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import Script from "next/script";
 
 import { CartProvider } from "@/context/CartContext";
 import { WishlistProvider } from "@/context/WishlistContext";
@@ -26,6 +27,22 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
+      <head>
+        {/* ✅ Google Analytics */}
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-QZT9YTDBMH"
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-QZT9YTDBMH');
+          `}
+        </Script>
+      </head>
+
       <body className={inter.className}>
         <LoginPopupProvider>
           <CartProvider>
@@ -33,7 +50,6 @@ export default function RootLayout({
               <Header />
               <CartDrawer />
 
-              {/* ❌ Yahan koi Sidebar nahi */}
               <main className="min-h-screen pb-20">{children}</main>
 
               <StickyToolbar />
