@@ -28,6 +28,12 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
+
+        {/* Favicon */}
+  <link rel="icon" href="/favicon.ico" />
+  <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192x192.png" />
+
         {/* ✅ Google Analytics */}
         <Script
           src="https://www.googletagmanager.com/gtag/js?id=G-QZT9YTDBMH"
