@@ -28,22 +28,35 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
+        {/* Favicons */}
+        <link rel="icon" href="/favicon.ico" />
+        <link
+          rel="icon"
+          type="image/png"
+          sizes="96x96"
+          href="/favicon-96x96.png"
+        />
+        <link
+          rel="icon"
+          type="image/png"
+          sizes="192x192"
+          href="/favicon-192x192.png"
+        />
 
-        {/* Favicon */}
-  <link rel="icon" href="/favicon.ico" />
-  <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png" />
-  <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192x192.png" />
+        {/* Google Analytics (GA4) */}
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-JCXXWSKL8K"
+          strategy="afterInteractive"
+        />
 
-        {/* ✅ Google Analytics */}
-        <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-JCXXWSKL8K"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-JCXXWSKL8K');
-</script>
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-JCXXWSKL8K');
+          `}
+        </Script>
       </head>
 
       <body className={inter.className}>
@@ -53,7 +66,9 @@ export default function RootLayout({
               <Header />
               <CartDrawer />
 
-              <main className="min-h-screen pb-20">{children}</main>
+              <main className="min-h-screen pb-20">
+                {children}
+              </main>
 
               <StickyToolbar />
               <LoginPopup />
